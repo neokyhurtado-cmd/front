@@ -6,10 +6,14 @@
   @endphp
   
   <a href="{{ url('/blog/'.$post->slug) }}">
-    <img src="{{ $src }}" 
-         alt="{{ $post->title }}"
-         class="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-         onerror="this.onerror=null;this.src='{{ $fallback }}';">
+    <figure class="relative aspect-[16/9] max-h-[200px] overflow-hidden">
+      <img src="{{ $src }}" 
+           alt="{{ $post->title }}"
+           width="1280"
+           height="720"
+           class="h-full w-full object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+           onerror="this.onerror=null;this.src='{{ $fallback }}';">
+    </figure>
   </a>
   
   <div class="p-4">

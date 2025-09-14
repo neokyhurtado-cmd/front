@@ -1,3 +1,0 @@
-
-<?php if ($__env->exists('partials.block-newsletter')) echo $__env->make('partials.block-newsletter', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
-<?php if ($__env->exists('partials.block-categories')) echo $__env->make('partials.block-categories', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\USER\panorama\resources\views/partials/left.blade.php ENDPATH**/ ?>

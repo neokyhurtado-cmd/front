@@ -63,11 +63,15 @@
     </style>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('img[loading="lazy"]').forEach(img=>{
+      // Solo aplicar skeleton a figures con aspect ratio controlado
+      document.querySelectorAll('figure[class*="aspect-"] img[loading="lazy"]').forEach(img=>{
         const parent = img.closest('figure');
-        parent?.classList.add('skeleton');
-        img.addEventListener('load', ()=> parent?.classList.remove('skeleton'), {once:true});
-        img.addEventListener('error',()=> parent?.classList.remove('skeleton'), {once:true});
+        if (parent && parent.className.includes('aspect-')) {
+          parent.classList.add('skeleton');
+          function removeSkeletonOnLoad() { parent?.classList.remove('skeleton'); }
+          img.addEventListener('load', removeSkeletonOnLoad, {once:true});
+          img.addEventListener('error', removeSkeletonOnLoad, {once:true});
+        }
       });
     });
     </script>

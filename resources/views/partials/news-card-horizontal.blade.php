@@ -14,13 +14,16 @@
 
 <article class="news-h">
   <a href="{{ route('posts.show',$post) }}" class="block h-wrap">
-    <div class="h-media">
+    <figure class="h-media relative aspect-[16/9] max-h-[200px] overflow-hidden rounded-lg">
       <img src="{{ $src }}" 
            alt="{{ $post->title }}" 
            loading="lazy" 
            decoding="async"
+           width="1280"
+           height="720"
+           class="h-full w-full object-cover block"
            onerror="this.onerror=null;this.src='{{ $fallback }}';">
-    </div>
+    </figure>
     <div class="h-body">
       @if($tag)<span class="pill">{{ is_string($tag) ? $tag : ($tag->name ?? '') }}</span>@endif
       <h3 class="h-title">{{ $post->title }}</h3>

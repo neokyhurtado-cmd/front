@@ -1,9 +1,15 @@
 @foreach ($posts as $post)
   <article class="card hover-raise">
-    @if($post->featured_image)
-      <img src="{{ asset('storage/'.$post->featured_image) }}" alt="">
-    @elseif($post->image_url)
-      <img src="{{ $post->image_url }}" alt="">
+    @if($post->featured_image || $post->image_url)
+      <figure class="relative aspect-[16/9] max-h-[200px] overflow-hidden">
+        <img src="{{ $post->featured_image ? asset('storage/'.$post->featured_image) : $post->image_url }}" 
+             alt="{{ $post->title }}"
+             width="1280"
+             height="720"
+             class="h-full w-full object-cover block"
+             loading="lazy"
+             onerror="this.onerror=null;this.src='{{ asset('img/placeholder.svg') }}';">
+      </figure>
     @endif
     <div class="body">
       <div class="badge">publicado</div>
