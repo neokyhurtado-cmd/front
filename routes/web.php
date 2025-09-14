@@ -10,22 +10,8 @@ use Artesaos\SEOTools\Facades\TwitterCard;
 use Artesaos\SEOTools\Facades\JsonLd;
 
 Route::get('/', function (Illuminate\Http\Request $r) {
-    // Para layout El Tiempo: 6 posts exactos en grid 2x3
-    $posts = Post::published()
-        ->orderByDesc('publish_at')
-        ->orderByDesc('published_at')
-        ->limit(6)
-        ->get();
-
-    // Mantener funcionalidad de pinned para otras vistas si necesario
-    $pinned = Post::published()->activePinned()
-        ->orderByDesc('published_at')->take(3)->get();
-
-    if ($r->ajax()) {
-        return view('partials.post-cards', ['posts'=>$posts])->render();
-    }
-
-    return view('home', compact('pinned','posts'));
+    // DEBUG: Sin base de datos por ahora
+    return view('home-debug', ['posts' => collect(), 'pinned' => collect()]);
 })->name('home');
 
 Route::get('/blog', function () {

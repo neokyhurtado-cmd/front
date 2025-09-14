@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,10 +12,116 @@
 }
 
 /* skeleton opcional (no infla layout porque la altura la pone el figure) */
-.skeleton{position:relative;overflow:hidden;background:#0f1012}
+.skeleton{position:relative;overflow:hidden;background:#11151A}
 .skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
-animation:shimmer 1.2s infinite; background:linear-gradient(90deg,transparent,#1b1c1f,transparent)}
-@keyframes shimmer{100%{transform:translateX(100%)}}
+animation:shimmer 1.2s infinite; background:linear-gradient(90deg,transparent,#1f2430,transparent)}
+@keyframes shimmer{to{transform:translateX(100%)}}
+
+/* 🚀 COMPONENTES FUTURISTAS */
+@layer components {
+  /* Panel base futurista */
+  .panel-futurista {
+    background: #11151A;
+    border-radius: 16px;
+    border: 1px solid #1F2430;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  
+  /* Tarjeta de estadística KPI */
+  .kpi-stat-card {
+    background: #11151A;
+    border-radius: 16px;
+    border: 1px solid #1F2430;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .kpi-stat-card:hover {
+    transform: translateY(-4px);
+    border-color: #293041;
+    box-shadow: 0 12px 32px rgba(0,0,0,.35);
+  }
+  
+  .kpi-stat-card .metric {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #2FE1FF;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  
+  .kpi-stat-card .label {
+    color: #A4AABB;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* News card futurista */
+  .news-card-futurista {
+    background: #11151A;
+    border-radius: 16px;
+    border: 1px solid #1F2430;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .news-card-futurista:hover {
+    transform: translateY(-2px);
+    border-color: #293041;
+  }
+  
+  /* Chip/Badge futurista */
+  .chip-futurista {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(24,27,33,.6);
+    color: #E6E8EC;
+    border: 1px solid #1F2430;
+  }
+  
+  /* CTA circular */
+  .cta-circular {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background: #2A130A;
+    border: 1px solid #3D1F0F;
+    color: #F59E0B;
+    transition: all 0.2s ease;
+  }
+  
+  .cta-circular:hover {
+    transform: scale(1.05);
+    background: #341708;
+  }
+  
+  /* Header futurista */
+  .header-futurista {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(15,17,21,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1F2430;
+  }
+  
+  /* Base futurista para body */
+  .bg-futurista {
+    background: #0F1115;
+    color: #E6E8EC;
+  }
+}
 
 /* Luz = default (fondo blanco) */
 :root {
