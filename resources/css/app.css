@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* utilidades pequeñas para este proyecto */
+.line-clamp-3{
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* skeleton opcional (no infla layout porque la altura la pone el figure) */
+.skeleton{position:relative;overflow:hidden;background:#0f1012}
+.skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+animation:shimmer 1.2s infinite; background:linear-gradient(90deg,transparent,#1b1c1f,transparent)}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
 /* Luz = default (fondo blanco) */
 :root {
   --bg: #ffffff;

@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <title>@yield('title', 'Panorama Ingeniería')</title>
+  <title><?php echo $__env->yieldContent('title', 'Panorama Ingeniería'); ?></title>
 
-  @vite(['resources/css/app.css','resources/js/app.js'])
+  <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css','resources/js/app.js']); ?>
 </head>
 <body class="min-h-screen bg-zinc-950 text-zinc-100">
   <header class="sticky top-0 z-40 backdrop-blur border-b border-zinc-800 bg-zinc-950/80">
@@ -19,12 +19,12 @@
   </header>
 
   <main class="mx-auto max-w-6xl px-4 py-6">
-    @yield('content')
+    <?php echo $__env->yieldContent('content'); ?>
   </main>
 
   <footer class="border-t border-zinc-800 text-xs text-zinc-400">
     <div class="mx-auto max-w-6xl px-4 py-6">
-      © {{ date('Y') }} Panorama Ingeniería
+      © <?php echo e(date('Y')); ?> Panorama Ingeniería
     </div>
   </footer>
 
@@ -41,4 +41,4 @@
   });
   </script>
 </body>
-</html>
+</html><?php /**PATH C:\Users\USER\panorama\resources\views/layouts/app.blade.php ENDPATH**/ ?>
