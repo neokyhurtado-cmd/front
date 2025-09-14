@@ -3,78 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark light" />
-  <title>@yield('title', 'Panorama Ingeniería')</title>
-
   @vite(['resources/css/app.css','resources/js/app.js'])
+  <title>@yield('title','Panorama Ingeniería')</title>
 </head>
-<body class="min-h-screen font-sans" style="background: #0F1115; color: #E6E8EC;">
-  {{-- Header futurista estilo Mobility API --}}
-  <header class="sticky top-0 z-50" style="background: rgba(15,17,21,.85); backdrop-filter: blur(12px); border-bottom: 1px solid #1F2430;">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="flex items-center justify-between h-16">
-        {{-- Logo/Marca --}}
-        <h1 class="text-xl font-bold tracking-wide" style="color: #E6E8EC;">PANORAMA INGENIERÍA</h1>
-        
-        {{-- Navegación --}}
-        <nav class="hidden md:flex items-center space-x-8 text-sm">
-          <a href="/" class="hover:text-white transition-colors" style="color: rgba(230,232,236,.8);">Documentación</a>
-          <a href="/blog" class="hover:text-white transition-colors" style="color: rgba(230,232,236,.8);">Contacto</a>
-          <a href="/admin" class="hover:text-white transition-colors" style="color: rgba(230,232,236,.8);">Estado API</a>
-        </nav>
-        
-        {{-- Controles derecha --}}
-        <div class="flex items-center space-x-3">
-          <button class="w-8 h-8 rounded-lg flex items-center justify-center" 
-                  style="background: #1F2430; color: #A4AABB;" 
-                  title="Layout Density">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-            </svg>
-          </button>
-          <button class="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style="background: #1F2430; color: #A4AABB;"
-                  title="Theme Toggle">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
-          </button>
-        </div>
+<body class="h-full bg-bg text-white">
+  {{-- Topbar --}}
+  <header class="sticky top-0 z-40 border-b border-stroke bg-panel/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold tracking-wide">PANORAMA INGENIERÍA</a>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-neutral-400">Bogotá</span>
+        <button data-drawer-target="aside" data-drawer-toggle="aside"
+                class="inline-flex items-center rounded-lg border border-stroke bg-panelAlt px-3 py-1 text-sm">
+          Menú
+        </button>
+        <button onclick="toggleTheme()" class="h-8 w-8 rounded-lg bg-panel flex items-center justify-center border border-stroke">🌙</button>
       </div>
     </div>
   </header>
 
-  <main class="mx-auto max-w-7xl px-6 py-8">
+  {{-- Sidebar --}}
+  <aside id="aside" class="fixed left-0 top-0 z-50 h-screen w-72 -translate-x-full border-r border-stroke bg-panel p-4 transition-transform"
+         tabindex="-1" aria-labelledby="aside-label">
+    <h2 id="aside-label" class="mb-4 text-sm font-medium text-neutral-300">Navegación</h2>
+    <nav class="space-y-1 text-sm">
+      <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 hover:bg-panelAlt">Dashboard</a>
+      <a href="#" class="block rounded-lg px-3 py-2 hover:bg-panelAlt">Reportes</a>
+      <a href="#" class="block rounded-lg px-3 py-2 hover:bg-panelAlt">Análisis IA</a>
+      <a href="#" class="block rounded-lg px-3 py-2 hover:bg-panelAlt">Ajustes</a>
+    </nav>
+  </aside>
+
+  {{-- Contenido --}}
+  <main class="mx-auto max-w-7xl p-4">
     @yield('content')
   </main>
-
-  {{-- Banda inferior CTA futurista --}}
-  <footer class="bg-[#11151A] rounded-2xl border border-[#1F2430] shadow-[0_8px_24px_rgba(0,0,0,.25)] mx-auto max-w-7xl px-6 py-8 mt-12 mb-8">
-    <div class="text-center">
-      <h2 class="text-lg font-semibold mb-2 text-[#B3FF66]">
-        Manera más efectiva de contactarnos para proyectos de movilidad
-      </h2>
-      <p class="text-sm mb-6 text-[#A4AABB]">
-        Análisis predictivo, optimización de rutas y señalización inteligente
-      </p>
-      <a href="https://panorama-ingenieria.com" 
-         class="inline-flex items-center px-6 py-3 rounded-lg font-semibold text-sm bg-[#2FE1FF] text-[#0F1115] hover:bg-[#26C7E0] transition-colors">
-        Ver nuestros servicios →
-      </a>
-    </div>
-  </footer>
-
-  <!-- Skeleton loading controlado -->
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('figure.aspect-\\[16\\/9\\] img[loading="lazy"]').forEach(img=>{
-      const f = img.closest('figure');
-      f.classList.add('skeleton');
-      const off=()=>f.classList.remove('skeleton');
-      img.addEventListener('load', off, {once:true});
-      img.addEventListener('error', off, {once:true});
-    });
-  });
-  </script>
 </body>
 </html>

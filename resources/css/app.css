@@ -1,317 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* utilidades pequeñas para este proyecto */
-.line-clamp-3{
-  display:-webkit-box;
-  -webkit-line-clamp:3;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
+@layer base {
+  :root { color-scheme: dark; }
+  html, body { 
+    background-color: #0F1115;
+    color: rgb(244 244 245);
+    font-family: Inter, system-ui, sans-serif;
+  }
 }
 
-/* skeleton opcional (no infla layout porque la altura la pone el figure) */
-.skeleton{position:relative;overflow:hidden;background:#11151A}
-.skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
-animation:shimmer 1.2s infinite; background:linear-gradient(90deg,transparent,#1f2430,transparent)}
-@keyframes shimmer{to{transform:translateX(100%)}}
-
-/* 🚀 COMPONENTES FUTURISTAS */
 @layer components {
-  /* Panel base futurista */
-  .panel-futurista {
-    background: #11151A;
-    border-radius: 16px;
+  .badge { 
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
     border: 1px solid #1F2430;
-    box-shadow: 0 8px 24px rgba(0,0,0,.25);
-  }
-  
-  /* Tarjeta de estadística KPI */
-  .kpi-stat-card {
-    background: #11151A;
-    border-radius: 16px;
-    border: 1px solid #1F2430;
-    box-shadow: 0 8px 24px rgba(0,0,0,.25);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-  }
-  
-  .kpi-stat-card:hover {
-    transform: translateY(-4px);
-    border-color: #293041;
-    box-shadow: 0 12px 32px rgba(0,0,0,.35);
-  }
-  
-  .kpi-stat-card .metric {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: #2FE1FF;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-  }
-  
-  .kpi-stat-card .label {
-    color: #A4AABB;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
+    background-color: rgba(24,27,33,.6);
+    font-size: 0.72rem;
     letter-spacing: 0.05em;
   }
   
-  /* News card futurista */
-  .news-card-futurista {
-    background: #11151A;
-    border-radius: 16px;
-    border: 1px solid #1F2430;
-    box-shadow: 0 8px 24px rgba(0,0,0,.25);
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  .news-card-futurista:hover {
-    transform: translateY(-2px);
-    border-color: #293041;
-  }
-  
-  /* Chip/Badge futurista */
-  .chip-futurista {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(24,27,33,.6);
-    color: #E6E8EC;
-    border: 1px solid #1F2430;
-  }
-  
-  /* CTA circular */
-  .cta-circular {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 9999px;
-    display: flex;
+  .chip {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.875rem;
-    background: #2A130A;
-    border: 1px solid #3D1F0F;
-    color: #F59E0B;
-    transition: all 0.2s ease;
+    gap: 0.5rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    border: 1px solid #1F2430;
+    background-color: rgba(24,27,33,.6);
+    font-size: 0.72rem;
   }
   
-  .cta-circular:hover {
-    transform: scale(1.05);
-    background: #341708;
-  }
-  
-  /* Header futurista */
-  .header-futurista {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(15,17,21,.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #1F2430;
-  }
-  
-  /* Base futurista para body */
-  .bg-futurista {
-    background: #0F1115;
-    color: #E6E8EC;
+  .card {
+    background-color: #11151A;
+    border-radius: 1rem;
+    border: 1px solid #1F2430;
+    padding: 1.25rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
   }
 }
-
-/* Luz = default (fondo blanco) */
-:root {
-  --bg: #ffffff;
-  --fg: #0f172a;         /* slate-900 */
-  --muted: #475569;      /* slate-600 */
-  --card: #ffffff;
-  --card-border: #e2e8f0;/* slate-200 */
-
-  /* Paleta "ingeniería-movilidad" */
-  --primary: #0e1b4d;   /* azul marino */
-  --primary-ink: #ffffff;
-  --accent: #2bbbad;    /* teal */
-  --warning: #ffb300;   /* ámbar */
-  --link: #0d47a1;
-
-  /* News tokens */
-  --news-font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, "Montserrat", Arial, sans-serif;
-  --news-surface: #ffffff;
-  --news-surface-hover: rgba(0,0,0,0.02);
-  --news-border: rgba(0,0,0,0.10);
-  --news-title: #111;
-  --news-text: #444;
-  --news-meta: #666;
-  --news-shadow: 0 1px 3px rgba(0,0,0,.15);
-  --news-shadow-hover: 0 4px 12px rgba(0,0,0,.20);
-}
-
-/* Oscuro */
-.dark {
-  --bg: #0b1220;        /* casi negro azulado */
-  --fg: #e5e7eb;        /* gris claro */
-  --muted: #9ca3af;
-  --card: #0f1629;
-  --card-border: #1f2937;
-
-  --primary: #6ea8ff;
-  --primary-ink: #0b1220;
-  --accent: #57e6d6;
-  --warning: #ffd166;
-  --link: #93c5fd;
-
-  /* News dark tokens */
-  --news-surface: #1A1A1A;
-  --news-surface-hover: rgba(255,255,255,0.02);
-  --news-border: rgba(255,255,255,0.10);
-  --news-title: #FFF;
-  --news-text: #DDD;
-  --news-meta: #AAA;
-  --news-shadow: 0 1px 3px rgba(0,0,0,.20);
-  --news-shadow-hover: 0 4px 12px rgba(0,0,0,.30);
-}
-
-/* Utilidades mínimas */
-.link { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
-.link:hover { opacity: .85; }
-
-/* Line clamp utilities */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* === NEWS CARDS (mantener al final) === */
-.news-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:24px }
-@media (max-width:640px){ .news-grid{ grid-template-columns:1fr; gap:16px } }
-.news-card{ background:var(--news-surface); border:1px solid var(--news-border); border-radius:4px; overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--news-shadow); transition:box-shadow .2s,border-color .2s,background .2s; }
-.news-card:hover{ box-shadow:var(--news-shadow-hover); background:var(--news-surface-hover) }
-.news-card .card-image{ width:100%; aspect-ratio:16/9; background:var(--news-surface-hover); overflow:hidden }
-.news-card .card-image img{ width:100%; height:100%; object-fit:cover; transition:transform .3s }
-.news-card:hover .card-image img{ transform:scale(1.05) }
-.news-card .card-content{ padding:24px; display:flex; flex-direction:column; gap:8px; flex:1 }
-.news-card .card-title{ font: 600 18px/1.4 var(--news-font); color:var(--news-title); margin:0 }
-.news-card .card-excerpt{ font: 400 14px/1.6 var(--news-font); color:var(--news-text) }
-.news-card .card-meta{ margin-top:12px; display:flex; justify-content:space-between; font:300 12px/1.4 var(--news-font); letter-spacing:.2px; color:var(--news-meta) }
-.pill{ display:inline-flex; align-items:center; height:28px; padding:4px 12px; border-radius:9999px; font-size:12px; letter-spacing:.5px; text-transform:uppercase; border:1px solid var(--news-border); color:var(--news-meta) }
-.pill:hover{ background:rgba(255,255,255,.1) }
-
-/* Ajuste fino "pixel-perfect" */
-.news-grid { gap: 32px; }
-.news-card { height: 100%; display: flex; flex-direction: column; }
-.news-card .card-content { padding: 24px; }
-
-/* === News Horizontal (Destacadas) === */
-.news-featured { display:grid; gap:24px; }
-@media (min-width:768px){ .news-featured { grid-template-columns: repeat(3, 1fr); } }
-
-.news-h {
-  display:flex; flex-direction:column; height:100%;
-  background:var(--news-surface); border:1px solid var(--news-border);
-  border-radius:4px; overflow:hidden; box-shadow:var(--news-shadow);
-  transition:box-shadow .2s ease, background .2s ease;
-}
-.news-h:hover{ box-shadow:var(--news-shadow-hover); background:var(--news-surface-hover); }
-
-.news-h .h-wrap { display:grid; grid-template-columns:1fr; }
-@media (min-width:768px){ .news-h .h-wrap { grid-template-columns: 5fr 7fr; } }
-
-.news-h .h-media { aspect-ratio:16/9; background:var(--news-surface-hover); overflow:hidden; }
-.news-h .h-media img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
-.news-h:hover .h-media img { transform:scale(1.03); }
-
-.news-h .h-body { padding:20px; display:flex; flex-direction:column; gap:8px; }
-.news-h .h-title { font: 600 20px/1.35 var(--news-font); color:var(--news-title); }
-.news-h .h-excerpt { font: 400 14px/1.6 var(--news-font); color:var(--news-text); }
-.news-h .h-meta { margin-top:auto; display:flex; gap:12px; font:300 12px/1.4 var(--news-font); color:var(--news-meta); }
-
-/* PARCHE INMEDIATO - A PRUEBA DE BALAS */
-@layer components {
-  /* ÁMBITO para evitar que otros estilos pisen */
-  .news-scope img { display:block; max-width:100%; height:auto; }
-
-  /* Featured horizontal: SIN floats/absolute */
-  .news-scope .news-featured { display:grid; gap:24px; }
-  @media (min-width:768px){ .news-scope .news-featured { grid-template-columns: repeat(3, 1fr); } }
-
-  .news-scope .news-h { display:flex; flex-direction:column; height:100%;
-    background:var(--news-surface); border:1px solid var(--news-border);
-    border-radius:4px; overflow:hidden; box-shadow:var(--news-shadow);
-  }
-  .news-scope .news-h .h-wrap { display:grid; grid-template-columns:1fr; }
-  @media (min-width:768px){ .news-scope .news-h .h-wrap { grid-template-columns:5fr 7fr; } }
-
-  .news-scope .news-h .h-media { aspect-ratio:16/9; overflow:hidden; background:var(--news-surface-hover); }
-  .news-scope .news-h .h-media img { width:100%; height:100%; object-fit:cover !important; transform:none !important; }
-
-  /* Grid normal con alturas iguales */
-  .news-scope .news-grid { display:grid; gap:32px; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); grid-auto-rows:1fr; }
-  .news-scope .news-card { height:100%; display:flex; flex-direction:column; overflow:hidden;
-    background:var(--news-surface); border:1px solid var(--news-border); border-radius:4px;
-  }
-  .news-scope .news-card .card-image { aspect-ratio:16/9; overflow:hidden; background:var(--news-surface-hover); }
-  .news-scope .news-card .card-image img { width:100%; height:100%; object-fit:cover !important; }
-  .news-scope .news-card .card-content { padding:24px; display:flex; flex-direction:column; gap:8px; flex:1; }
-}
-
-/* AI: NO EDITAR. BLOQUE CONGELADO PARA ESTABILIDAD DEL LAYOUT */
-@layer components {
-  /* === BLOQUE CONGELADO (NO TOCAR) — Guarda el layout === */
-  .news-scope { position: relative; isolation: isolate; }
-  .news-scope * { box-sizing: border-box; }
-
-  /* Mata floats/posiciones raras que vengan de otros CSS */
-  .news-scope img {
-    display: block !important;
-    max-width: 100% !important;
-    height: auto !important;
-    float: none !important;
-    position: static !important;
-    transform: none !important;
-  }
-
-  /* Featured horizontal */
-  .news-scope .news-h .h-media { aspect-ratio: 16/9; overflow: hidden; }
-  .news-scope .news-h .h-media img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-
-  /* Cards normales */
-  .news-scope .news-card { height: 100%; display: flex; flex-direction: column; }
-  .news-scope .news-card .card-image { aspect-ratio: 16/9; overflow: hidden; }
-  .news-scope .news-card .card-image img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-
-  /* Grid uniforme (todas las cards misma altura) */
-  .news-scope .news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 32px;
-    grid-auto-rows: 1fr;
-  }
-  .news-scope .news-grid > .item { display: flex; } /* estira la card al alto 1fr */
-
-  /* Columnas laterales pegadas y sin superposiciones */
-  .news-scope .col { min-width: 0; }
-  .news-scope .col-left,
-  .news-scope .col-right { position: sticky; top: 96px; }
-
-  /* Clear definitivo por si algo trae floats heredados */
-  .news-scope::after { content: ""; display: block; clear: both; }
-}
-/* === FIN BLOQUE CONGELADO === */

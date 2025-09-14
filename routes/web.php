@@ -9,10 +9,7 @@ use Artesaos\SEOTools\Facades\OpenGraph;
 use Artesaos\SEOTools\Facades\TwitterCard;
 use Artesaos\SEOTools\Facades\JsonLd;
 
-Route::get('/', function (Illuminate\Http\Request $r) {
-    // DEBUG: Sin base de datos por ahora
-    return view('home-debug', ['posts' => collect(), 'pinned' => collect()]);
-})->name('home');
+Route::get('/', [App\Http\Controllers\HomeController::class,'index'])->name('home');
 
 Route::get('/blog', function () {
     $posts = Post::published()->orderByDesc('publish_at')->paginate(12);
@@ -35,41 +32,15 @@ Route::get('/blog/{post:slug}', function (Post $post) {
     return view('blog.show', compact('post'));
 })->name('posts.show'); // Cambiar a posts.show para consistencia
 
-Route::get('/test', function () {
-    try {
-        $posts = Post::published()->take(10)->get();
-        $tags = ['movilidad','tránsito','señalización','Bogotá','TransMilenio','seguridad vial'];
-        $kpis = [
-            ['label' => 'Posts', 'value' => Post::count(), 'color' => '#8B5CF6'],
-            ['label' => 'Publicados', 'value' => Post::published()->count(), 'color' => '#00E5FF'],
-            ['label' => 'Estado', 'value' => 'OK', 'color' => '#39FF14'],
-        ];
-        
-        return view('home-msn', [
-            'hero' => $posts->first(),
-            'pinned' => collect(),
-            'grid' => $posts->skip(1),
-            'kpis' => $kpis,
-            'tags' => $tags,
-            'q' => ''
-        ]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()]);
-    }
-});
-
-Route::get('/portal', function () {
-    $latest = Post::published()->orderByDesc('publish_at')->limit(6)->get();
-    $kpis = [
-        ['label'=>'Total posts', 'val'=>Post::count(), 'color'=>'#8B5CF6'],
-        ['label'=>'Automatización', 'val'=>'RSS + IA', 'color'=>'#00E5FF'],
-        ['label'=>'Actualización', 'val'=>'24/7', 'color'=>'#39FF14'],
-    ];
-    return view('portal', compact('latest','kpis'));
-});
+// Rutas eliminadas: /test y /portal ya no están disponibles
+// Las vistas home-msn y portal fueron removidas en limpieza
 
 // Proxy de imágenes con caché
 Route::get('/img-proxy', [\App\Http\Controllers\ImgProxy::class, 'show'])->name('img.proxy');
+
+// Rutas admin comentadas - vistas eliminadas en limpieza
+// Route::view('/admin','admin.dashboard')->name('admin.dashboard');
+// Route::view('/login','auth.login')->name('login');
 
 // Ruta de salud para verificar servidor
 Route::get('/healthz', fn() => 'ok');
