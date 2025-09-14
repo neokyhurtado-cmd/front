@@ -1,0 +1,123 @@
+{
+  "models": [
+    {
+      "title": "🔧 PANORAMA IAS (Laravel/Vite Expert)",
+      "provider": "openai",
+      "model": "gpt-4o-2024-08-06",
+      "apiKey": "[YOUR_OPENAI_API_KEY]",
+      "systemMessage": "Eres PANORAMA IAS, asistente experto en Laravel 12+ + Vite + Tailwind CSS v4. Tu misión: dar soluciones precisas, seguras y directamente aplicables para desarrollo web moderno.\n\nContexto del proyecto:\n- Laravel 12.x con Blade templates\n- Vite 7.x para assets (CSS/JS)\n- Tailwind CSS v4 con @layer components y scoping\n- Windows PowerShell para scripts QA\n- Filament para admin panel\n- SQLite database\n- Livewire components\n\nTu estilo:\n✅ Respuestas cortas y directas\n✅ Código listo para copiar/pegar\n✅ Identificar la causa raíz de errores\n✅ Sugerir mejores prácticas de seguridad\n✅ Optimizar performance y accesibilidad\n\nNO hagas:\n❌ Explicaciones largas sin código\n❌ Sugerir cambios masivos sin justificar\n❌ Tocar vendor/ o archivos de configuración críticos sin avisar\n\nSiempre prioriza: 1) Que funcione, 2) Que sea seguro, 3) Que sea mantenible."
+    },
+    {
+      "title": "🧠 GPT-5 Architect",
+      "provider": "openai", 
+      "model": "gpt-4o",
+      "apiKey": "[YOUR_OPENAI_API_KEY]",
+      "systemMessage": "You are a senior software architect. Focus on high-level design patterns, scalability, and best practices. Provide strategic guidance for complex technical decisions."
+    },
+    {
+      "title": "🐛 Debug Specialist",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "apiKey": "[YOUR_OPENAI_API_KEY]",
+      "systemMessage": "You are a debugging expert. Focus on:\n- Root cause analysis\n- Step-by-step troubleshooting\n- Error pattern recognition\n- Performance bottlenecks\n- Security vulnerabilities\n\nProvide actionable debugging steps and diagnostic commands."
+    },
+    {
+      "title": "⚡ Quick Fix",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "apiKey": "[YOUR_OPENAI_API_KEY]",
+      "systemMessage": "You provide ultra-fast, concise code fixes. No explanations unless asked. Just working code."
+    }
+  ],
+  "customCommands": [
+    {
+      "name": "Laravel Error Analysis",
+      "prompt": "Analiza este error de Laravel y dame la solución más directa:\n\n{{{ input }}}",
+      "description": "Diagnóstico rápido de errores Laravel específicos"
+    },
+    {
+      "name": "Blade Component Optimize",
+      "prompt": "Optimiza este componente Blade para:\n- Mejor performance\n- Accesibilidad (a11y)\n- Soporte dark/light theme\n- Responsive design\n\nCódigo actual:\n{{{ input }}}",
+      "description": "Mejora automática de componentes Blade"
+    },
+    {
+      "name": "Vite + Tailwind Fix",
+      "prompt": "Revisa esta configuración de Vite/Tailwind y corrige cualquier problema:\n\n{{{ input }}}\n\nProyecto: Laravel 12 + Vite 7 + Tailwind CSS v4",
+      "description": "Diagnóstico de problemas con assets"
+    },
+    {
+      "name": "Security Review", 
+      "prompt": "Revisa este código por vulnerabilidades de seguridad (XSS, CSRF, SQL injection, etc.):\n\n{{{ input }}}\n\nDame los problemas y las correcciones exactas.",
+      "description": "Análisis de seguridad de código PHP/Blade"
+    },
+    {
+      "name": "PowerShell QA Script",
+      "prompt": "Crea/mejora este script PowerShell para QA/testing:\n\n{{{ input }}}\n\nDebe ser compatible con Windows y tener manejo de errores robusto.",
+      "description": "Generación de scripts QA para Windows"
+    },
+    {
+      "name": "Continue QA Integration",
+      "prompt": "Ejecuta el script Continue QA y analiza los errores estructurados:\n\n{{{ input }}}\n\nProporciona un plan de acción priorizado para resolver problemas encontrados. El script usa:\n- Niveles de severidad (critical, warning, info)\n- Rutas de archivo y números de línea exactos\n- Sugerencias accionables para cada problema\n- Modos: quick (Blade/Vite), full (+Laravel health), deploy (+security)",
+      "description": "Análisis de reportes QA estructurados con Continue"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Tab Autocomplete",
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "apiKey": "[YOUR_OPENAI_API_KEY]"
+  },
+  "slashCommands": [
+    {
+      "name": "blade",
+      "description": "Generate Blade template code"
+    },
+    {
+      "name": "laravel",
+      "description": "Laravel-specific code generation"
+    },
+    {
+      "name": "tailwind",
+      "description": "Tailwind CSS class suggestions"
+    },
+    {
+      "name": "vite",
+      "description": "Vite configuration help"
+    },
+    {
+      "name": "qa",
+      "description": "Generate QA/testing scripts"
+    }
+  ],
+  "contextProviders": [
+    {
+      "name": "diff",
+      "params": {}
+    },
+    {
+      "name": "folder",
+      "params": {
+        "folders": ["resources/views", "app/Http", "routes", "tools"]
+      }
+    },
+    {
+      "name": "codebase",
+      "params": {}
+    }
+  ],
+  "allowAnonymousTelemetry": false,
+  "docs": [
+    {
+      "title": "Laravel 11 Docs",
+      "startUrl": "https://laravel.com/docs/11.x"
+    },
+    {
+      "title": "Tailwind CSS v4",
+      "startUrl": "https://tailwindcss.com/docs"
+    },
+    {
+      "title": "Vite Guide",
+      "startUrl": "https://vitejs.dev/guide/"
+    }
+  ]
+}

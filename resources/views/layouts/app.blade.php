@@ -13,11 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     @if(app()->environment('local'))
-      <!-- Prefetch Vite HMR en desarrollo -->
-      <link rel="prefetch" href="http://127.0.0.1:5174/@vite/client">
+        <!-- Prefetch Vite HMR en desarrollo -->
+        <link rel="prefetch" href="http://127.0.0.1:5174/@@vite/client">
     @endif
     
-  @vite(['resources/css/app.css', 'resources/css/future-ui.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/css/future-ui.css', 'resources/js/app.js'])
     @stack('styles')
   </head>
   <body class="min-h-screen bg-[var(--bg)] text-[var(--fg)]">

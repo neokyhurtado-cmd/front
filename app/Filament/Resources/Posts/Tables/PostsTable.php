@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources\Posts\Tables;
 
-use Filament\Actions\Action;
+use App\Models\Post;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -20,117 +20,161 @@ class PostsTable
     {
         return $table
             ->columns([
-                ImageColumn::make('image_url')
-                    ->label('Imagen')
-                    ->width(60)
-                    ->height(60)
-                    ->circular(),
-                
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
-                    ->sortable()
-                    ->limit(50)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-                        return strlen($state) > 50 ? $state : null;
-                    }),
-
-                BadgeColumn::make('status')
-                    ->label('Estado')
-                    ->colors([
-                        'secondary' => 'draft',
-                        'warning' => 'scheduled',
-                        'success' => 'published',
-                        'danger' => 'archived',
-                    ])
-                    ->icons([
-                        'heroicon-o-pencil' => 'draft',
-                        'heroicon-o-clock' => 'scheduled',
-                        'heroicon-o-check-circle' => 'published',
-                        'heroicon-o-archive-box' => 'archived',
-                    ]),
-
-                BadgeColumn::make('type')
-                    ->label('Tipo')
-                    ->colors([
-                        'primary' => 'news',
-                        'success' => 'educational',
-                        'warning' => 'analysis',
-                    ]),
-
-                TextColumn::make('source')
-                    ->label('Fuente')
-                    ->searchable()
-                    ->limit(20)
-                    ->toggleable(),
-
-                IconColumn::make('evergreen')
-                    ->label('Perenne')
-                    ->boolean()
-                    ->toggleable(),
-
-                TextColumn::make('published_at')
-                    ->label('Publicado')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->since()
-                    ->placeholder('No publicado'),
-
+                    ->limit(60),
+                    
+                TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'educational' => 'info',
+                        'news' => 'warning',
+                        default => 'gray',
+                    })
+                    ->label('Tipo'),
+                    
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'scheduled' => 'warning',
+                        'published' => 'success',
+                        'archived' => 'danger',
+                        default => 'gray',
+                    })
+                    ->label('Estado'),
+                    
                 TextColumn::make('publish_at')
                     ->label('Programado')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
+                    ->dateTime('d M Y H:i')
+                    ->sortable(),
+                    
+                TextColumn::make('published_at')
+                    ->label('Publicado')
+                    ->since()
+                    ->sortable(),
+                    
+                IconColumn::make('evergreen')
+                    ->label('Evergreen')
+                    ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime('d/m/Y H:i')
+                    
+                IconColumn::make('is_pinned')
+                    ->label('Destacado')
+                    ->boolean()
+                    ->toggleable()
+                    ->trueIcon('heroicon-o-star')
+                    ->falseIcon('heroicon-o-star')
+                    ->trueColor('warning'),
+                    
+                TextColumn::make('pin_priority')
+                    ->label('Prioridad')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable()
+                    ->badge()
+                    ->color(fn (int $state): string => match (true) {
+                        $state >= 8 => 'danger',
+                        $state >= 5 => 'warning', 
+                        $state > 0 => 'info',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (int $state): string => $state > 0 ? "P{$state}" : '-'),
             ])
+            ->defaultSort('publish_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
-                    ->label('Estado')
                     ->options([
-                        'draft' => 'Borrador',
-                        'scheduled' => 'Programado',
-                        'published' => 'Publicado',
-                        'archived' => 'Archivado',
+                        'draft'=>'Borrador',
+                        'scheduled'=>'Programado',
+                        'published'=>'Publicado',
+                        'archived'=>'Archivado'
                     ]),
-                
                 SelectFilter::make('type')
-                    ->label('Tipo')
+                    ->options(['news'=>'Noticia','educational'=>'Educativo']),
+                    
+                SelectFilter::make('is_pinned')
+                    ->label('Destacados')
                     ->options([
-                        'news' => 'Noticia',
-                        'educational' => 'Educativo',
-                        'analysis' => 'Análisis',
-                    ]),
-
-                SelectFilter::make('evergreen')
-                    ->label('¿Perenne?')
-                    ->options([
-                        1 => 'Sí',
-                        0 => 'No',
-                    ]),
+                        1 => 'Solo destacados',
+                        0 => 'Solo normales'
+                    ])
+                    ->query(fn ($query, $data) => 
+                        $data['value'] ? $query->where('is_pinned', (bool) $data['value']) : $query
+                    ),
             ])
-            ->defaultSort('created_at', 'desc')
             ->recordActions([
-                Action::make('view_blog')
-                    ->label('Ver en Blog')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn ($record): string => route('post.show', $record->slug))
-                    ->openUrlInNewTab(),
-                ViewAction::make(),
                 EditAction::make(),
+                
+                Action::make('publicarAhora')
+                    ->label('Publicar')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->action(function (Post $record) {
+                        $record->update([
+                            'status' => 'published',
+                            'published_at' => now(),
+                            'publish_at' => $record->publish_at ?? now(),
+                        ]);
+                    }),
+                    
+                Action::make('programarSlot')
+                    ->label('Programar')
+                    ->color('warning')
+                    ->action(function (Post $record) {
+                        $slots = [8,12,16,20];
+                        $today = now()->startOfDay();
+                        foreach ($slots as $h) {
+                            $slot = $today->copy()->setTime($h,0);
+                            if (!Post::where('publish_at',$slot)->exists()) {
+                                $record->update(['status'=>'scheduled','publish_at'=>$slot]);
+                                break;
+                            }
+                        }
+                    }),
+                    
+                Action::make('destacar')
+                    ->label('Destacar')
+                    ->icon('heroicon-o-star')
+                    ->color('warning')
+                    ->action(function (Post $record) {
+                        $record->pin(5);
+                        cache()->forget('home:v1:');
+                    })
+                    ->visible(fn (Post $record) => !$record->is_pinned),
+                    
+                Action::make('quitarDestaque')
+                    ->label('Quitar destaque')
+                    ->icon('heroicon-o-star')
+                    ->color('gray')
+                    ->action(function (Post $record) {
+                        $record->unpin();
+                        cache()->forget('home:v1:');
+                    })
+                    ->visible(fn (Post $record) => $record->is_pinned),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    
+                    BulkAction::make('destacarSeleccionados')
+                        ->label('Destacar seleccionados')
+                        ->icon('heroicon-o-star')
+                        ->color('warning')
+                        ->action(function ($records) {
+                            $records->each(fn (Post $post) => $post->pin(5));
+                            cache()->forget('home:v1:');
+                        }),
+                        
+                    BulkAction::make('quitarDestaqueSeleccionados')
+                        ->label('Quitar destaque seleccionados')
+                        ->icon('heroicon-o-star')
+                        ->color('gray')
+                        ->action(function ($records) {
+                            $records->each(fn (Post $post) => $post->unpin());
+                            cache()->forget('home:v1:');
+                        }),
                 ]),
-            ])
-            ->emptyStateHeading('No hay posts')
-            ->emptyStateDescription('Aún no se han creado posts. Los posts se generan automáticamente desde RSS.')
-            ->striped();
+            ]);
     }
 }

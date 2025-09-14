@@ -1,0 +1,3 @@
+
+<?php if ($__env->exists('partials.block-most-read')) echo $__env->make('partials.block-most-read', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php if ($__env->exists('partials.block-tags')) echo $__env->make('partials.block-tags', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\USER\panorama\resources\views/partials/right.blade.php ENDPATH**/ ?>

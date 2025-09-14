@@ -3,124 +3,132 @@
 namespace App\Filament\Resources\Posts\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Group;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class PostForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(3)
+            ->columns(12)
             ->components([
-                Section::make('Contenido Principal')
-                    ->columns(2)
-                    ->columnSpan(2)
-                    ->schema([
-                        TextInput::make('title')
-                            ->label('Título')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        
-                        TextInput::make('slug')
-                            ->label('Slug URL')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        
-                        Textarea::make('excerpt')
-                            ->label('Resumen/Extracto')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        
-                        RichEditor::make('body')
-                            ->label('Contenido')
-                            ->columnSpanFull(),
-                    ]),
+                Group::make()->schema([
+                    TextInput::make('title')
+                        ->label('Título')
+                        ->required()
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn ($state, callable $set) => 
+                            $set('meta_title', Str::limit($state.' | Panorama Ingeniería IA', 60, ''))),
 
-                Section::make('Configuración')
-                    ->columnSpan(1)
-                    ->schema([
-                        Select::make('status')
-                            ->label('Estado')
-                            ->options([
-                                'draft' => 'Borrador',
-                                'scheduled' => 'Programado',
-                                'published' => 'Publicado',
-                                'archived' => 'Archivado'
-                            ])
-                            ->default('draft')
-                            ->required(),
-                        
-                        Select::make('type')
-                            ->label('Tipo')
-                            ->options([
-                                'news' => 'Noticia',
-                                'educational' => 'Educativo',
-                                'analysis' => 'Análisis'
-                            ])
-                            ->default('news')
-                            ->required(),
-                        
-                        Toggle::make('evergreen')
-                            ->label('Contenido Perenne')
-                            ->default(false),
-                        
-                        DateTimePicker::make('publish_at')
-                            ->label('Programar Publicación')
-                            ->seconds(false),
-                        
-                        DateTimePicker::make('published_at')
-                            ->label('Fecha de Publicación')
-                            ->seconds(false),
-                    ]),
+                    TextInput::make('slug')
+                        ->label('Slug')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->helperText('Se genera automáticamente al guardar.'),
 
-                Section::make('Fuente y Media')
-                    ->columns(2)
-                    ->columnSpan(2)
-                    ->schema([
-                        TextInput::make('source')
-                            ->label('Fuente'),
-                        
-                        TextInput::make('source_url')
-                            ->label('URL Fuente')
-                            ->url(),
-                        
-                        TextInput::make('image_url')
-                            ->label('URL de Imagen')
-                            ->url()
-                            ->columnSpanFull(),
-                        
-                        TagsInput::make('tags')
-                            ->label('Etiquetas')
-                            ->columnSpanFull(),
-                    ]),
+                    TextInput::make('image_url')
+                        ->label('URL de imagen')
+                        ->url()
+                        ->nullable(),
 
-                Section::make('SEO')
-                    ->columns(1)
-                    ->columnSpan(1)
-                    ->schema([
-                        TextInput::make('meta_title')
-                            ->label('Meta Título')
-                            ->maxLength(60),
-                        
-                        Textarea::make('meta_description')
-                            ->label('Meta Descripción')
-                            ->rows(3)
-                            ->maxLength(160),
-                        
-                        TextInput::make('canonical_url')
-                            ->label('URL Canónica')
-                            ->url(),
-                    ]),
+                    Textarea::make('excerpt')
+                        ->label('Extracto (SEO)')
+                        ->rows(3)
+                        ->helperText('Resumen corto para listados y meta descripción.'),
+
+                    RichEditor::make('body')
+                        ->label('Contenido')
+                        ->columnSpanFull()
+                        ->required(),
+                ])->columnSpan(8),
+
+                Group::make()->schema([
+                    Select::make('type')
+                        ->label('Tipo')
+                        ->options(['news'=>'Noticia','educational'=>'Educativo'])
+                        ->default('news'),
+
+                    Select::make('status')
+                        ->label('Estado')
+                        ->options([
+                            'draft'=>'Borrador',
+                            'scheduled'=>'Programado',
+                            'published'=>'Publicado',
+                            'archived'=>'Archivado',
+                        ])->default('draft'),
+
+                    Toggle::make('evergreen')
+                        ->label('Contenido evergreen')
+                        ->default(false),
+
+                    Toggle::make('pinned')
+                        ->label('Fijar en Home (legacy)')
+                        ->default(false)
+                        ->live()
+                        ->helperText('Sistema anterior. Usar "Destacado" mejor.'),
+
+                    Toggle::make('is_pinned')
+                        ->label('⭐ Destacado')
+                        ->default(false)
+                        ->live()
+                        ->helperText('Aparece en fila horizontal "Destacadas". IA automática.'),
+
+                    DateTimePicker::make('pinned_until')
+                        ->label('Destacado hasta')
+                        ->seconds(false)
+                        ->native(false)
+                        ->visible(fn ($get) => $get('pinned') || $get('is_pinned'))
+                        ->helperText('Si se deja vacío, se destaca por 30 días'),
+
+                    DateTimePicker::make('publish_at')
+                        ->label('Publicar el')
+                        ->seconds(false),
+
+                    TextInput::make('seo_keywords')
+                        ->label('Keywords SEO')
+                        ->helperText('Separadas por coma. Se generan con IA.'),
+
+                    TextInput::make('meta_title')
+                        ->label('Meta title')
+                        ->maxLength(60),
+
+                    Textarea::make('meta_description')
+                        ->label('Meta description')
+                        ->rows(2)
+                        ->helperText('Máx. 160 caracteres.'),
+
+                    TextInput::make('image_source_label')
+                        ->label('Fuente de imagen')
+                        ->placeholder('Ej: Reuters, AP'),
+
+                    TextInput::make('image_source_url')
+                        ->label('URL fuente imagen')
+                        ->url()
+                        ->nullable(),
+
+                    TagsInput::make('tags')
+                        ->label('Tags')
+                        ->separator(',')
+                        ->suggestions(['movilidad', 'transporte', 'bogota', 'señalización', 'vial', 'urbano', 'TransMilenio', 'cierres', 'seguridad vial']),
+
+                    FileUpload::make('featured_image')
+                        ->label('Imagen destacada')
+                        ->directory('posts')
+                        ->image()
+                        ->imageEditor()
+                        ->visibility('public')
+                        ->downloadable()
+                        ->openable(),
+                ])->columnSpan(4),
             ]);
     }
 }

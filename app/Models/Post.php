@@ -11,9 +11,11 @@ class Post extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title','slug','type','status','source','source_url','image_url',
+        'external_id','title','slug','type','status','source','source_url','image_url',
         'excerpt','body','tags','fetched_at','publish_at','published_at',
-        'evergreen','meta_title','meta_description','canonical_url'
+        'evergreen','meta_title','meta_description','canonical_url','featured_image',
+        'pinned','pinned_until','is_pinned','image_source_label','image_source_url',
+        'seo_keywords','raw_text','content'
     ];
 
     protected $casts = [
@@ -22,6 +24,9 @@ class Post extends Model
         'publish_at' => 'datetime',
         'published_at' => 'datetime',
         'evergreen' => 'boolean',
+        'pinned' => 'boolean',
+        'is_pinned' => 'boolean',
+        'pinned_until' => 'datetime',
     ];
 
     // Slug automático sencillo
@@ -39,10 +44,18 @@ class Post extends Model
         });
     }
 
+    public function getRouteKeyName(): string 
+    { 
+        return 'slug'; 
+    }
+
     // Scopes útiles
     public function scopePublished($query)
     {
-        return $query->where('status','published');
+        return $query->where('status','published')
+                    ->where(function($q){
+                        $q->whereNull('publish_at')->orWhere('publish_at','<=',now());
+                    });
     }
 
     public function scopePendingIA($query)
@@ -58,5 +71,76 @@ class Post extends Model
     public function scopeDraft($query) 
     {
         return $query->where('status','draft');
+    }
+
+    // Scope para posts destacados activos
+    public function scopeActivePinned($query) 
+    {
+        return $query->where('pinned', true)
+                     ->where(function($x){
+                         $x->whereNull('pinned_until')
+                           ->orWhere('pinned_until','>=',now());
+                     });
+    }
+
+    // Métodos para gestión de destacados
+    public function pin($daysFromNow = 30)
+    {
+        $base = $this->published_at ?? $this->publish_at ?? now();
+        $this->update([
+            'pinned' => true,
+            'pinned_until' => \Illuminate\Support\Carbon::parse($base)->addDays($daysFromNow)
+        ]);
+    }
+
+    public function unpin()
+    {
+        $this->update([
+            'pinned' => false,
+            'pinned_until' => null
+        ]);
+    }
+
+    // Accessor para URLs de imágenes con fallback
+    public function getImageUrlAttribute(): ?string
+    {
+        // Si hay featured_image (subida por Filament)
+        if ($this->featured_image) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->featured_image);
+        }
+        
+        // Si hay image_url (URL externa del RSS)
+        if ($this->attributes['image_url'] ?? null) {
+            return $this->attributes['image_url'];
+        }
+        
+        return null;
+    }
+
+    // Helper para obtener primer tag
+    public function firstTag(): ?string
+    {
+        return $this->tags && count($this->tags) > 0 ? $this->tags[0] : null;
+    }
+
+    // Scope para posts destacados con orden fijo
+    public function scopeFeatured($query)
+    {
+        return $query->where(function($q) {
+                $q->where('pinned', true)->orWhere('is_pinned', true);
+            })
+            ->where(function($q) {
+                $q->whereNull('pinned_until')
+                  ->orWhere('pinned_until', '>=', now());
+            })
+            ->orderBy('pinned', 'desc')
+            ->orderBy('is_pinned', 'desc')
+            ->orderBy('created_at', 'desc');
+    }
+
+    // Accessor unificado para is_pinned
+    public function getIsFeaturedAttribute(): bool
+    {
+        return $this->pinned || $this->is_pinned;
     }
 }

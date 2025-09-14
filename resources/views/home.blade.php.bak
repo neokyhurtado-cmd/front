@@ -1,0 +1,82 @@
+@extends('layouts.app')
+@section('title','Portada')
+    {{-- DERECHA (beneficios) --}}
+    <aside class="col col-right md:col-span-3 lg:col-span-2">
+      <div class="rounded-[28px] border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <h3 class="mb-2 text-sm font-semibold">Beneficios</h3>
+        <ul class="space-y-1 text-sm text-[var(--muted)]">
+          <li>⏱ Ahorro de tiempo</li>
+          <li>💰 Reducción de costos</li>
+          <li>📈 95% efectividad</li>
+          <li>📰 321+ artículos</li>
+          <li class="pt-2"><a class="link" href="/admin">Panel de control →</a></li>
+        </ul>
+      </div>
+    </aside>ontent')
+@php
+  // Featured posts con scope que incluye is_pinned y pinned
+  $featured = \App\Models\Post::published()->featured()->take(4)->get();
+  if ($featured->isEmpty()) { 
+    $featured = $posts->take(4); 
+  }
+@endphp
+
+<section class="news-scope">
+<div class="mx-auto max-w-7xl px-4">
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+    {{-- IZQUIERDA --}}
+    <aside class="col col-left md:col-span-3 lg:col-span-2">
+      <div class="sticky top-24 rounded-[28px] border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <h3 class="mb-2 text-sm font-semibold">¿Qué hacemos?</h3>
+        <ul class="space-y-1 text-sm text-[var(--muted)] list-disc pl-4">
+          <li>Automatizamos contenido de movilidad urbana con IA.</li>
+          <li>Artículos 24/7 desde fuentes RSS.</li>
+          <li>IA + SEO en tiempo real.</li>
+        </ul>
+      </div>
+    </aside>
+
+    {{-- CENTRO --}}
+    <section class="col center md:col-span-6 lg:col-span-8">
+      <div class="rounded-[36px] border border-[var(--card-border)] bg-[var(--card)] px-4 sm:px-6 md:px-8 pt-3 pb-6">
+        <div class="mx-auto mb-5 w-fit rounded-xl border border-[var(--card-border)] bg-[var(--bg)] px-3 py-1 text-xs">
+          blog automatizado · SEO + columnas de opinión (IA)
+        </div>
+
+        {{-- DESTACADAS (horizontal 16:9) --}}
+        @if($featured->count() > 0)
+        <section class="news-featured mb-8">
+          @foreach($featured as $post)
+            @include('partials.news-card-horizontal', ['post' => $post])
+          @endforeach
+        </section>
+        @endif
+
+        {{-- GRID normal 2×3 (cada card dentro de un <div class="item">) --}}
+        <div class="news-grid">
+          @foreach($posts->skip($featured->count())->take(6) as $post)
+            <div class="item">
+              @include('partials.news-card', ['post' => $post])
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </section>
+
+    {{-- DERECHA (beneficios) --}}
+    <aside class="col-span-12 lg:col-span-2">
+      <div class="rounded-[28px] border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <h3 class="mb-2 text-sm font-semibold">Beneficios</h3>
+        <ul class="space-y-1 text-sm text-[var(--muted)]">
+          <li>⏱ Ahorro de tiempo</li>
+          <li>💰 Reducción de costos</li>
+          <li>📈 95% efectividad</li>
+          <li>� 321+ artículos</li>
+          <li class="pt-2"><a class="link" href="/admin">Panel de control →</a></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+</section>
+@endsection

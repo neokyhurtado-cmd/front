@@ -20,17 +20,9 @@ class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $navigationLabel = 'Posts del Blog';
-
-    protected static ?string $modelLabel = 'Post';
-
-    protected static ?string $pluralModelLabel = 'Posts';
-
-    protected static ?string $recordTitleAttribute = 'title';
-
-    protected static ?int $navigationSort = 1;
+    protected static ?string $recordTitleAttribute = 'YES';
 
     public static function form(Schema $schema): Schema
     {
