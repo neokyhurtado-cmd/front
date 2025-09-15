@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Panorama</title>
-  @vite(['resources/css/app.css','resources/js/app.js','resources/js/kpis.js'])
+  @vite(['resources/css/app.css','resources/css/future-ui.css','resources/js/app.js'])
 </head>
 <body class="min-h-full bg-neutral-950 text-zinc-100">
   <header class="p-4 border-b border-zinc-800">
