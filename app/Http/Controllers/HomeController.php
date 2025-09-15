@@ -9,18 +9,33 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // KPIs de demo (luego los reemplazamos con datos reales)
+        // Obtener parámetros del request
+        $startDate = $request->get('start', now()->format('Y-m-d'));
+        $city = $request->get('city', 'Bogotá');
+        $apiRequests = $request->get('requests', 23);
+
+        // KPIs calculados basados en parámetros (ejemplo dinámico)
+        $baseEffectiveness = 93;
+        $baseTravel = rand(12, 19);
+        $baseSaving = 23;
+
+        // Ajustar KPIs basado en parámetros
+        if ($apiRequests > 50) {
+            $baseEffectiveness += 5;
+            $baseSaving += 3;
+        }
+
         $kpis = [
-            'benefit'      => '12–19%',
-            'effectiveness'=> '93%',
-            'saving'       => '23%',
+            'benefit'      => $baseTravel . '–' . ($baseTravel + 7) . '%',
+            'effectiveness'=> $baseEffectiveness . '%',
+            'saving'       => $baseSaving . '%',
         ];
 
-        // Parámetros de sidebar (simples para empezar)
+        // Parámetros de sidebar
         $params = [
-            'startdate' => now()->format('Y-m-d'),
-            'city'      => 'Bogotá',
-            'requests'  => 23,
+            'startdate' => $startDate,
+            'city'      => $city,
+            'requests'  => $apiRequests,
         ];
 
         // Posts (usa tu fuente real; aquí dejo algo seguro)

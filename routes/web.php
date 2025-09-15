@@ -40,6 +40,17 @@ Route::get('/img-proxy', [\App\Http\Controllers\ImgProxy::class, 'show'])->name(
 // Ruta de salud para verificar servidor
 Route::get('/healthz', fn() => 'ok');
 
+// API para KPIs dinámicos
+Route::get('/api/kpis', function () {
+    return response()->json([
+        'travelTime'   => ['min'=>12, 'max'=>19],
+        'effectiveness'=> 93,
+        'saving'       => 23,
+        'series'       => [12, 14, 10, 8, 11, 9, 13], // ejemplo para gráfico
+        'labels'       => ['L','M','X','J','V','S','D'],
+    ]);
+})->name('api.kpis');
+
 // Ruta de diagnóstico CSS
 Route::get('/debug-css', function () {
     return view('debug-css');
