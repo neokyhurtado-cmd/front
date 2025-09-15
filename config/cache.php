@@ -12,7 +12,12 @@ return [
     | This option controls the default cache store that will be used by the
     | framework. This connection is utilized if another isn't explicitly
     | specified when running a cache operation inside the application.
-    |
+    'default' => env('CACHE_DRIVER', 'file'),
+    
+    // If Redis is configured via .env (CACHE_DRIVER=redis), Laravel will use the
+    // redis store. We keep the default as 'file' to avoid surprising changes in
+    // development environments. For production, set CACHE_DRIVER=redis and
+    // ensure Redis is reachable.
     */
 
     'default' => env('CACHE_STORE', 'database'),
