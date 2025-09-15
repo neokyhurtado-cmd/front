@@ -9,6 +9,17 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    safelist: [
+        'rounded-[36px]',
+        'md:col-span-3',
+        'md:col-span-6',
+        'lg:col-span-2',
+        'lg:col-span-8',
+        'line-clamp-2',
+        'line-clamp-3',
+        'line-clamp-4',
+    ],
+
     theme: {
         extend: {
             fontFamily: {
