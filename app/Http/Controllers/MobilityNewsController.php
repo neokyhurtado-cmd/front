@@ -172,6 +172,9 @@ class MobilityNewsController extends Controller
                 ];
             }
 
+            // Asegurar que minutesAgo sea entero y normalizar el mapa
+            foreach ($map as &$row) { $row['minutesAgo'] = (int) ($row['minutesAgo'] ?? 0); } unset($row);
+
             // Ordena por fecha (más reciente primero)
             return collect($map)->sortBy('minutesAgo')->values()->all();
         });

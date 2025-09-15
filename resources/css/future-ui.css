@@ -1,10 +1,463 @@
 @layer components {
   .news-scope {
-    /* Contenedor principal del dashboard */
+    /* Contenedor principal exacto del boceto */
     position: relative;
     min-height: 100vh;
-    background-color: #0F1115;
-    color: #f5f5f5;
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* === CONTENEDOR PORTADA PRINCIPAL === */
+  .news-scope .portada-container {
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  /* === PALETA MONOCROMÁTICA === */
+  :root {
+    --bg: #FFFFFF;             /* Fondo blanco */
+    --panel: #FAFAFA;          /* Panels gris muy claro */
+    --border: #E0E0E0;         /* Líneas grises */
+    --text-main: #111111;      /* Texto negro */
+    --text-secondary: #555555; /* Texto gris oscuro */
+    --accent: #000000;         /* Elementos destacables en negro */
+    
+    /* Compatibilidad con código existente */
+    --bg-primary: var(--bg);
+    --bg-panel: var(--panel);
+    --border-subtle: var(--border);
+    --gradient-start: var(--accent);
+    --gradient-end: #333333;
+    --text-primary: var(--text-main);
+  }
+
+  /* === BASE STYLES === */
+  html, body {
+    background-color: #f7f7f8;
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    background: var(--bg);
+    min-height: 100vh;
+    border-radius: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .main-wrap {
+      border-radius: 24px 24px 0 0;
+      margin-top: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  /* === GRID SYSTEM === */
+  .grid-3-6-3 {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .grid-3-6-3 {
+      grid-template-columns: 3fr 6fr 3fr;
+    }
+  }
+
+  .cards-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .cards-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .card .media {
+    aspect-ratio: 16/9;
+    background: var(--panel);
+  }
+
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 24px;
+    height: fit-content;
+  }
+
+  .stack > * + * {
+    margin-top: 16px;
+  }
+
+  .p-16 {
+    padding: 16px;
+  }
+
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: var(--border);
+    color: var(--text-secondary);
+  }
+
+  /* Footer CTA */
+  .footer-cta {
+    margin-top: 40px;
+  }
+
+  /* === TIPOGRAFÍA MONTSERRAT === */
+  .news-scope .font-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+  }
+
+  .news-scope .font-subtitle {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-weight: 400;
+  }
+
+  /* === HEADER MONOCROMÁTICO === */
+  .news-scope .portada-header {
+    background: var(--bg);
+    height: 60px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom: 1px solid var(--border);
+    margin: -24px -24px 24px -24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .news-scope .portada-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px;
+    color: var(--text-main);
+    text-align: center;
+    line-height: 60px;
+    font-weight: 600;
+  }
+
+  /* === PANELES BASE === */
+  .news-scope .panel-base {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .news-scope .panel-base:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* === LAYOUT DE 3 COLUMNAS FIJAS === */
+  .news-scope .portada-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  @media (min-width: 1024px) {
+    .news-scope .portada-grid {
+      grid-template-columns: 200px 1fr 200px;
+    }
+  }
+
+  /* === TARJETAS DE SERVICIO RECTANGULARES === */
+  .news-scope .card-service {
+    width: 260px;
+    height: 260px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .news-scope .card-service:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .news-scope .card-service p {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .news-scope .card-service .service-title {
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+
+  .news-scope .card-service .service-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* === BOTONES CTA MONOCROMÁTICOS === */
+  .news-scope .btn-gradient {
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .news-scope .btn-gradient:hover {
+    background: #333333;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* === CHIPS === */
+  .news-scope .chip-base {
+    background-color: var(--border-subtle);
+    color: var(--text-secondary);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    display: inline-block;
+  }
+
+  /* === NEWS CARDS === */
+  .news-scope .news-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .news-scope .news-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .news-scope .news-card .card-image {
+    aspect-ratio: 16/9;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .news-scope .news-card .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .news-scope .news-card .card-tag {
+    background: var(--border);
+    color: var(--text-secondary);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+  }
+
+  .news-scope .news-card .card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .news-scope .news-card .card-meta {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .news-scope .news-card .card-btn {
+    color: var(--accent);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .news-scope .news-card .card-btn:hover {
+    color: #333333;
+    text-decoration: underline;
+  }
+
+  /* === CHIP PARA PANEL CENTRAL === */
+  .news-scope .chip {
+    background: var(--border);
+    color: var(--text-secondary);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  /* === KPI SECTION === */
+  .news-scope .kpi-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .news-scope .kpi-value {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-bottom: 8px;
+  }
+
+  .news-scope .progress-bar {
+    background-color: var(--border-subtle);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .news-scope .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.8s ease;
+    position: relative;
+  }
+
+  .news-scope .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--accent);
+    opacity: 0.3;
+    filter: blur(2px);
+  }
+
+  /* === FOOTER CTA === */
+  .news-scope .footer-cta {
+    background-color: var(--bg-panel);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 32px;
+    position: relative;
+  }
+
+  .news-scope .footer-message {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+
+  .news-scope .footer-btn {
+    margin-left: 16px;
+  }
+
+  /* === TOGGLE MONOCROMÁTICO === */
+  .news-scope .toggle-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .toggle-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px var(--shadow-glow);
+  }
+
+  /* === ENLACES CON ACENTO === */
+  .news-scope .link-accent {
+    color: var(--gradient-end);
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .link-accent:hover {
+    text-decoration: underline;
+    color: var(--gradient-start);
   }
 
   /* Scope obligatorio: .news-scope */
@@ -338,4 +791,318 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* Estilos específicos para la portada */
+  .news-scope.portada-theme {
+    background-color: #f9fafb;
+    color: #111827;
+  }
+
+  .news-scope.portada-theme .news-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .news-scope.portada-theme .news-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px) !important;
+  }
+
+  .news-scope.portada-theme .benefit-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+
+  .news-scope.portada-theme .benefit-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* === TOKENS EXACTOS PARA MOCKUP === */
+  :root{
+    --bg-primary:#0F1115;
+    --bg-card:#11151A;
+    --border-subtle:#1F242B;
+    --accent-cyan:#2FE1FF;
+    --accent-purple:#7C62F6;
+    --text-1:#E5E7EB;
+    --text-2:#94A3B8;
+  }
+
+  /* Cards y chips */
+  .ui-card{
+    background:var(--bg-card); 
+    border:1px solid var(--border-subtle); 
+    border-radius:16px;
+    position: relative;
+  }
+  
+  .ui-chip{
+    font-size:.70rem; 
+    letter-spacing:.08em; 
+    text-transform:uppercase; 
+    color:#A1A1AA; 
+    background:#181B20; 
+    border:1px solid #252A31; 
+    border-radius:999px; 
+    padding:.25rem .6rem;
+    display: inline-block;
+  }
+
+  /* Círculos CTA (burbujas) */
+  .circle-cta{
+    width:190px;
+    height:190px;
+    border-radius:999px;
+    background:radial-gradient(120% 120% at 50% 40%, #6C2BD9 0%, #4C1D95 65%, #2A1747 100%);
+    border:1px solid #3C1F78; 
+    box-shadow:0 12px 40px rgba(124,98,246,.25);
+    color:#EDE9FE; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    text-align:center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .circle-cta.small{
+    width:170px;
+    height:170px;
+  }
+
+  .circle-cta:hover{
+    transform: translateY(-2px);
+    box-shadow:0 16px 50px rgba(124,98,246,.35);
+  }
+
+  /* Barras de beneficios con glow */
+  .benefit-bar{
+    position:relative;
+    height:10px;
+    border-radius:999px;
+    background:#1B2129;
+    overflow:hidden;
+    border:1px solid #242C36;
+  }
+  
+  .benefit-bar > span{
+    position:absolute;
+    inset:0;
+    border-radius:999px;
+    background:linear-gradient(90deg,#06B6D4 0%, var(--accent-cyan) 100%);
+    box-shadow:0 0 0 1px rgba(47,225,255,.15),0 6px 22px rgba(47,225,255,.15);
+    transition: width 0.8s ease;
+  }
+
+  /* Footer CTA pill */
+  .cta-strip{
+    border:1px solid var(--border-subtle);
+    background:#0C0F12;
+    border-radius:16px;
+  }
+
+  /* Pequeños pulidos */
+  .hard-shadow{
+    box-shadow:0 12px 40px rgba(0,0,0,.35);
+  }
+  
+  .card-hover:hover{
+    border-color:#26313D;
+    background:#12161B;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+
+  /* Utilidades para texto */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* === ENLACES Y BOTONES MONOCROMÁTICOS === */
+  a,
+  button {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--accent);
+  }
+  
+  a:hover,
+  button:hover {
+    color: #333333;
+  }
+
+  .button-cta {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .button-cta:hover {
+    background: #333333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* === PANELS Y TARJETAS UNIFORMES === */
+  .portada-container aside,
+  .portada-container section,
+  .portada-container footer {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  /* === TEXTOS Y META INFORMACIÓN === */
+  h1, h2, h3, p, span, time {
+    color: var(--text-main);
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+  
+  .news-card-small h3,
+  .news-card-medium h3 {
+    color: var(--text-main);
+  }
+  
+  .news-card-small time,
+  .news-card-medium .meta {
+    color: var(--text-secondary);
+  }
+
+  /* === MEJORAS DE ACCESIBILIDAD === */
+  /* Focus visible para navegación por teclado */
+  a:focus,
+  button:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Focus para cards que son clickeables */
+  .news-card:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Mejor contraste para texto secundario */
+  .text-secondary,
+  .card-meta {
+    color: #444444; /* Mejorar contraste */
+  }
+
+  /* Hover estados más claros */
+  .card-service:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+  }
+
+  /* Skip link para navegación por teclado */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 8px;
+    text-decoration: none;
+    z-index: 1000;
+    border-radius: 4px;
+  }
+
+  .skip-link:focus {
+    top: 6px;
+  }
+
+  /* === MEJORAS PARA NUEVO LAYOUT === */
+  /* Sticky sidebar para desktop */
+  .lg\:sticky {
+    position: sticky;
+  }
+  
+  .lg\:top-6 {
+    top: 1.5rem;
+  }
+
+  /* Mejor spacing para las cards */
+  .grid.sm\:grid-cols-2 > * {
+    min-height: 280px;
+  }
+
+  /* Hover effect mejorado para cards */
+  .hover\:shadow-md:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Line clamp para títulos */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  /* Aspect ratio responsive */
+  .aspect-\[16\/9\] {
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Grid responsive mejorado */
+  @media (min-width: 640px) {
+    .sm\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:col-span-3 {
+      grid-column: span 3 / span 3;
+    }
+    .lg\:col-span-6 {
+      grid-column: span 6 / span 6;
+    }
+  }
+  /* === MOCK STAGE + CARDS === */
+  .news-scope .stage {
+    padding: 20px;
+    background: linear-gradient(180deg, rgba(15,17,21,0.6), rgba(15,17,21,0.4));
+    border-radius: 16px;
+  }
+
+  .news-scope .card-mock {
+    background: linear-gradient(180deg, rgba(17,21,26,0.9), rgba(11,13,15,0.85));
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .news-scope .card-mock:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+
+  .news-scope .badge-breaking {
+    background: linear-gradient(90deg,#fb7185,#f97316);
+    color: white;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .news-scope .meta-row { color: rgba(255,255,255,0.55); font-size: 12px; margin-top: 6px; }
 }
