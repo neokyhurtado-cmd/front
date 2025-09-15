@@ -1,265 +1,98 @@
 
-<?php $__env->startSection('title','Dashboard'); ?>
 
 <?php $__env->startSection('content'); ?>
-  
-  <div class="grid gap-4 md:grid-cols-3">
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'Startdate']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Startdate']); ?>
-      <input type="date" value="<?php echo e(now()->format('Y-m-d')); ?>" class="mt-2 w-full rounded-lg border-stroke bg-panelAlt text-sm" />
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'City']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'City']); ?>
-      <input type="text" value="Bogotá" class="mt-2 w-full rounded-lg border-stroke bg-panelAlt text-sm"/>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'API Requests']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'API Requests']); ?>
-      <input type="number" value="23" class="mt-2 w-full rounded-lg border-stroke bg-panelAlt text-sm"/>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-  </div>
-
-  
-  <div class="mt-6 grid gap-4 md:grid-cols-3">
-    <?php if (isset($component)) { $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.kpi','data' => ['title' => 'Effectiveness','value' => 93]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('kpi'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Effectiveness','value' => 93]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $attributes = $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $component = $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-    <?php if (isset($component)) { $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.kpi','data' => ['title' => 'Cost Saving','value' => 23]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('kpi'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Cost Saving','value' => 23]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $attributes = $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $component = $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-    <?php if (isset($component)) { $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.kpi','data' => ['title' => 'Travel Time Reduction','value' => 18,'suffix' => '%','range' => '12–19%']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('kpi'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Travel Time Reduction','value' => 18,'suffix' => '%','range' => '12–19%']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $attributes = $__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__attributesOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632)): ?>
-<?php $component = $__componentOriginal7eb63bdf3faa86d7e1b98377393d1632; ?>
-<?php unset($__componentOriginal7eb63bdf3faa86d7e1b98377393d1632); ?>
-<?php endif; ?>
-  </div>
-
-  
-  <div class="mt-6 grid gap-4 md:grid-cols-3">
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['class' => 'md:col-span-2','title' => 'Blog automatizado: análisis y opinión']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['class' => 'md:col-span-2','title' => 'Blog automatizado: análisis y opinión']); ?>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <?php $__empty_1 = true; $__currentLoopData = ($posts ?? collect())->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $post): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-          <article class="bg-panelAlt rounded-xl border border-stroke overflow-hidden hover:-translate-y-0.5 transition">
-            <div class="aspect-[16/9] bg-gray-800 overflow-hidden">
-              <img src="<?php echo e($post->image_url ?? asset('placeholder.svg')); ?>" alt="<?php echo e($post->title); ?>" class="w-full h-full object-cover" loading="lazy">
-            </div>
-            <div class="p-3">
-              <span class="inline-block text-xs font-medium text-accent mb-1"><?php echo e(strtoupper($post->category->name ?? 'MOVILIDAD')); ?></span>
-              <h3 class="text-sm font-semibold text-white line-clamp-2 mb-1"><?php echo e($post->title); ?></h3>
-              <time class="text-xs text-neutral-400"><?php echo e(optional($post->published_at)->diffForHumans() ?? '1 day ago'); ?></time>
-            </div>
-          </article>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-          <div class="col-span-2 p-4 text-center text-neutral-400">
-            <p>No hay noticias disponibles aún.</p>
-            <p class="text-xs mt-1">El sistema RSS + IA se activará pronto.</p>
-          </div>
-        <?php endif; ?>
-      </div>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
+<div class="grid gap-6 lg:grid-cols-[320px_1fr]">
     
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'Traffic Analysis']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Traffic Analysis']); ?>
-      <div class="h-64 w-full rounded-lg border border-stroke bg-panelAlt grid place-items-center">
-        <div class="text-center">
-          <div class="text-4xl mb-2">🗺️</div>
-          <span class="text-neutral-400 text-sm">Map placeholder</span>
-          <p class="text-xs text-neutral-500 mt-1">Integración con Google Maps</p>
-        </div>
-      </div>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-  </div>
+    <aside class="space-y-6">
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <h3 class="text-lg font-semibold mb-4">Parameters</h3>
 
-  
-  <div class="mt-6 grid gap-4 md:grid-cols-2">
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'Travel Time Reduction']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Travel Time Reduction']); ?>
-      <div class="h-48 w-full rounded-lg border border-stroke bg-panelAlt grid place-items-center">
-        <div class="text-center">
-          <div class="text-3xl mb-2">📊</div>
-          <span class="text-neutral-400 text-sm">Chart placeholder</span>
+            <label class="block text-sm text-zinc-300 mb-1">Startdate</label>
+            <input value="<?php echo e($params['startdate']); ?>"
+                   class="w-full h-11 rounded-xl bg-zinc-900 border border-zinc-800 px-3 mb-3 outline-none" type="date"/>
+
+            <label class="block text-sm text-zinc-300 mb-1">City</label>
+            <input value="<?php echo e($params['city']); ?>"
+                   class="w-full h-11 rounded-xl bg-zinc-900 border border-zinc-800 px-3 mb-3 outline-none" type="text"/>
+
+            <button class="w-full h-11 rounded-xl bg-cyan-500/20 text-cyan-300 border border-zinc-800 hover:bg-cyan-500/30 transition">
+                Submit
+            </button>
         </div>
-      </div>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
+
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <h3 class="text-lg font-semibold mb-4">Requests</h3>
+            <label class="block text-sm text-zinc-300 mb-1">API Requests</label>
+            <input value="<?php echo e($params['requests']); ?>"
+                   class="w-full h-11 rounded-xl bg-zinc-900 border border-zinc-800 px-3 mb-3 outline-none" type="number"/>
+            <button class="w-full h-11 rounded-xl bg-cyan-500/20 text-cyan-300 border border-zinc-800 hover:bg-cyan-500/30 transition">
+                Submit
+            </button>
+        </div>
+    </aside>
+
     
-    <?php if (isset($component)) { $__componentOriginal53747ceb358d30c0105769f8471417f6 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal53747ceb358d30c0105769f8471417f6 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.card','data' => ['title' => 'Assistant Analytics']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Assistant Analytics']); ?>
-      <div class="h-48 w-full rounded-lg border border-stroke bg-panelAlt grid place-items-center">
-        <div class="text-center">
-          <div class="text-3xl mb-2">🤖</div>
-          <span class="text-neutral-400 text-sm">AI Assistant integration</span>
-          <p class="text-xs text-neutral-500 mt-1">Próximamente disponible</p>
+    <section class="space-y-6">
+        
+        <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                <p class="text-zinc-300 mb-2">Travel Time Benefit</p>
+                <p class="text-4xl font-bold text-cyan-300"><?php echo e($kpis['benefit']); ?></p>
+            </div>
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                <p class="text-zinc-300 mb-2">Effectiveness</p>
+                <p class="text-4xl font-bold text-lime-300"><?php echo e($kpis['effectiveness']); ?></p>
+            </div>
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                <p class="text-zinc-300 mb-2">Cost Saving</p>
+                <p class="text-4xl font-bold text-cyan-300"><?php echo e($kpis['saving']); ?></p>
+            </div>
         </div>
-      </div>
-     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $attributes = $__attributesOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__attributesOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal53747ceb358d30c0105769f8471417f6)): ?>
-<?php $component = $__componentOriginal53747ceb358d30c0105769f8471417f6; ?>
-<?php unset($__componentOriginal53747ceb358d30c0105769f8471417f6); ?>
-<?php endif; ?>
-  </div>
+
+        
+        <div class="grid gap-6 lg:grid-cols-2">
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 h-64 flex items-center justify-center text-zinc-400">
+                Travel Time Reduction (chart)
+            </div>
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 h-64 flex items-center justify-center text-zinc-400">
+                Traffic Analysis (map/chart)
+            </div>
+        </div>
+
+        
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">Blog automatizado: análisis y opinión</h3>
+                <a href="/blog" class="text-cyan-300 hover:underline">Ver todo</a>
+            </div>
+
+            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <?php $__empty_1 = true; $__currentLoopData = $posts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $post): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <a href="<?php echo e($post['url'] ?? '#'); ?>" target="_blank"
+                       class="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 hover:-translate-y-0.5 transition">
+                        <span class="inline-flex items-center text-[11px] px-2 h-6 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 mb-3">
+                            <?php echo e($post['category'] ?? 'NEWS'); ?>
+
+                        </span>
+                        <h4 class="text-lg leading-snug font-medium text-zinc-100">
+                            <?php echo e($post['title']); ?>
+
+                        </h4>
+                    </a>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <div class="text-zinc-400">No hay posts por ahora.</div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 text-center">
+            <p class="text-zinc-300">¿Quieres ver cómo reducimos tiempos de viaje en tu ciudad?</p>
+            <a href="/contacto" class="inline-flex mt-3 h-11 px-5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-zinc-800 hover:bg-cyan-500/30 transition items-center">
+                Contáctanos
+            </a>
+        </div>
+    </section>
+</div>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\USER\panorama\resources\views/home.blade.php ENDPATH**/ ?>

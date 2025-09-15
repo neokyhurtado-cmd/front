@@ -1,8 +1,341 @@
 @layer components {
+  .news-scope {
+    /* Contenedor principal del dashboard */
+    position: relative;
+    min-height: 100vh;
+    background-color: #0F1115;
+    color: #f5f5f5;
+  }
+
   /* Scope obligatorio: .news-scope */
-  .news-scope .card-image { aspect-ratio: 16/9; overflow: hidden; }
-  .news-scope .card-image img { width: 100%; height: 100%; object-fit: cover; }
+  .news-scope .card-image { 
+    aspect-ratio: 16/9; 
+    overflow: hidden; 
+  }
+  
+  .news-scope .card-image img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+  }
+
+  /* Elementos de KPI mejorados */
+  .news-scope .kpi-card {
+    background-color: rgba(17, 21, 26, 0.9);
+    backdrop-filter: blur(4px);
+    border-radius: 1rem;
+    border: 1px solid rgba(31, 36, 48, 0.5);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .kpi-card:hover {
+    border-color: rgba(47, 225, 255, 0.3);
+    box-shadow: 0 10px 25px rgba(47, 225, 255, 0.1);
+  }
+
+  .news-scope .kpi-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #2FE1FF, #B3FF66);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .news-scope .kpi-trend.up {
+    color: #B3FF66;
+  }
+
+  .news-scope .kpi-trend.down {
+    color: #fb7185;
+  }
+
+  .news-scope .kpi-trend.stable {
+    color: #fb923c;
+  }
+
+  /* Cards mejoradas */
+  .news-scope .enhanced-card {
+    background-color: rgba(17, 21, 26, 0.8);
+    backdrop-filter: blur(4px);
+    border-radius: 1rem;
+    border: 1px solid rgba(31, 36, 48, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .enhanced-card:hover {
+    border-color: rgba(47, 225, 255, 0.3);
+    box-shadow: 0 25px 50px rgba(47, 225, 255, 0.05);
+  }
+
+  /* Efectos de glow */
+  .news-scope .glow-effect {
+    position: relative;
+  }
+
+  .news-scope .glow-effect::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(to right, rgba(47, 225, 255, 0.2), rgba(179, 255, 102, 0.2));
+    border-radius: 1rem;
+    filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: -1;
+  }
+
+  .news-scope .glow-effect:hover::before {
+    opacity: 1;
+  }
+
+  /* Barras de progreso mejoradas */
+  .news-scope .progress-bar {
+    width: 100%;
+    background-color: rgba(31, 36, 48, 0.3);
+    border-radius: 9999px;
+    height: 0.5rem;
+    overflow: hidden;
+  }
+
+  .news-scope .progress-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: all 1s ease;
+  }
+
+  .news-scope .progress-fill.accent {
+    background: linear-gradient(to right, #2FE1FF, rgba(47, 225, 255, 0.8));
+  }
+
+  .news-scope .progress-fill.lime {
+    background: linear-gradient(to right, #B3FF66, rgba(179, 255, 102, 0.8));
+  }
+
+  .news-scope .progress-fill.orange {
+    background: linear-gradient(to right, #fb923c, #f97316);
+  }
+
+  /* Botones futuristas */
+  .news-scope .btn-futuristic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .news-scope .btn-primary {
+    background: linear-gradient(to right, #2FE1FF, rgba(47, 225, 255, 0.8));
+    color: #0F1115;
+    box-shadow: 0 10px 25px rgba(47, 225, 255, 0.25);
+  }
+
+  .news-scope .btn-primary:hover {
+    background: linear-gradient(to right, rgba(47, 225, 255, 0.9), rgba(47, 225, 255, 0.7));
+  }
+
+  .news-scope .btn-accent {
+    background: linear-gradient(to right, #B3FF66, rgba(179, 255, 102, 0.8));
+    color: #0F1115;
+    box-shadow: 0 10px 25px rgba(179, 255, 102, 0.25);
+  }
+
+  .news-scope .btn-accent:hover {
+    background: linear-gradient(to right, rgba(179, 255, 102, 0.9), rgba(179, 255, 102, 0.7));
+  }
+
+  .news-scope .btn-secondary {
+    background-color: #11151A;
+    border: 1px solid rgba(31, 36, 48, 0.5);
+    color: #f5f5f5;
+  }
+
+  .news-scope .btn-secondary:hover {
+    border-color: rgba(47, 225, 255, 0.5);
+    background-color: rgba(17, 21, 26, 0.8);
+  }
+
+  /* Inputs mejorados */
+  .news-scope .input-futuristic {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(31, 36, 48, 0.5);
+    background-color: #11151A;
+    color: #f5f5f5;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .input-futuristic::placeholder {
+    color: rgba(163, 163, 163, 0.5);
+  }
+
+  .news-scope .input-futuristic:focus {
+    outline: none;
+    border-color: rgba(47, 225, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(47, 225, 255, 0.2);
+  }
+
+  /* Activity feed */
+  .news-scope .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .activity-item:hover {
+    background-color: rgba(17, 21, 26, 0.3);
+  }
+
+  .news-scope .activity-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+
+  .news-scope .activity-dot.accent {
+    background-color: #2FE1FF;
+  }
+
+  .news-scope .activity-dot.lime {
+    background-color: #B3FF66;
+  }
+
+  .news-scope .activity-dot.orange {
+    background-color: #fb923c;
+  }
+
+  .news-scope .activity-dot.blue {
+    background-color: #60a5fa;
+  }
+
+  /* Status badges */
+  .news-scope .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .news-scope .status-badge.accent {
+    background-color: rgba(47, 225, 255, 0.1);
+    color: #2FE1FF;
+    border: 1px solid rgba(47, 225, 255, 0.3);
+  }
+
+  .news-scope .status-badge.lime {
+    background-color: rgba(179, 255, 102, 0.1);
+    color: #B3FF66;
+    border: 1px solid rgba(179, 255, 102, 0.3);
+  }
+
+  .news-scope .status-badge.orange {
+    background-color: rgba(251, 146, 60, 0.1);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+
+  .news-scope .status-badge.red {
+    background-color: rgba(251, 113, 133, 0.1);
+    color: #fb7185;
+    border: 1px solid rgba(251, 113, 133, 0.3);
+  }
+
+  /* Blog cards */
+  .news-scope .blog-card {
+    background-color: rgba(17, 21, 26, 0.8);
+    backdrop-filter: blur(4px);
+    border-radius: 1rem;
+    border: 1px solid rgba(31, 36, 48, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .blog-card:hover {
+    border-color: rgba(47, 225, 255, 0.3);
+    box-shadow: 0 25px 50px rgba(47, 225, 255, 0.05);
+    transform: scale(1.02);
+  }
+
+  .news-scope .blog-card-minimal {
+    border-left: 2px solid rgba(47, 225, 255, 0.3);
+    padding-left: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .news-scope .blog-card-minimal:hover {
+    border-left-color: rgba(47, 225, 255, 0.5);
+  }
+
+  /* Task items */
+  .news-scope .task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .news-scope .task-item:hover {
+    background-color: rgba(17, 21, 26, 0.3);
+  }
+
+  /* Line clamp utilities */
+  .news-scope .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .news-scope .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
   /* Neutraliza floats/position/transform heredados dentro del scope */
-  .news-scope * { float: none; position: static; transform: none; }
+  .news-scope * { 
+    float: none !important; 
+    position: static !important; 
+    transform: none !important; 
+  }
+
+  /* Excepciones necesarias para funcionalidad */
+  .news-scope .relative { position: relative !important; }
+  .news-scope .absolute { position: absolute !important; }
+  .news-scope .fixed { position: fixed !important; }
+  .news-scope .sticky { position: sticky !important; }
+  .news-scope [class*="translate"] { transform: var(--tw-transform) !important; }
+  .news-scope [class*="rotate"] { transform: var(--tw-transform) !important; }
+  .news-scope [class*="scale"] { transform: var(--tw-transform) !important; }
+  .news-scope .animate-pulse { animation: pulse 2s infinite !important; }
+  .news-scope .animate-spin { animation: spin 1s linear infinite !important; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 }

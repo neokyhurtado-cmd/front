@@ -8,6 +8,8 @@ use Artesaos\SEOTools\Facades\SEOMeta;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Artesaos\SEOTools\Facades\TwitterCard;
 use Artesaos\SEOTools\Facades\JsonLd;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', [App\Http\Controllers\HomeController::class,'index'])->name('home');
 
@@ -30,17 +32,37 @@ Route::get('/blog/{post:slug}', function (Post $post) {
     }
     
     return view('blog.show', compact('post'));
-})->name('posts.show'); // Cambiar a posts.show para consistencia
-
-// Rutas eliminadas: /test y /portal ya no están disponibles
-// Las vistas home-msn y portal fueron removidas en limpieza
+})->name('posts.show');
 
 // Proxy de imágenes con caché
 Route::get('/img-proxy', [\App\Http\Controllers\ImgProxy::class, 'show'])->name('img.proxy');
 
-// Rutas admin comentadas - vistas eliminadas en limpieza
-// Route::view('/admin','admin.dashboard')->name('admin.dashboard');
-// Route::view('/login','auth.login')->name('login');
-
 // Ruta de salud para verificar servidor
 Route::get('/healthz', fn() => 'ok');
+
+// Ruta de diagnóstico CSS
+Route::get('/debug-css', function () {
+    return view('debug-css');
+});
+
+// Ruta de prueba simple
+Route::get('/test', function () {
+    return 'ROUTE OK';
+});
+
+// Ruta de prueba Tailwind
+Route::get('/test2', fn() => view('test2'));
+
+// Dashboard para usuarios autenticados
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+// Rutas de perfil
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
