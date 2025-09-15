@@ -93,9 +93,16 @@ class MobilityNewsController extends Controller
         }
         return $best;
     }
-    public function index()
+    public function index(Request $request)
     {
-        // Cachea 5 minutos para evitar rate limits
+        // Ensure counters exist to avoid repeated creation SELECTs on the DB cache driver
+        try {
+            Cache::add('mobility.image.misses', 0, 86400);
+            Cache::add('mobility.image.hits', 0, 86400);
+        } catch (\Throwable $__e) {
+            // noop: best-effort initialization
+        }
+        // Cachea 5 minutos para evitar rate limits (guardamos lista completa)
         $items = Cache::remember('mobility_news', 300, function () {
 
             // EJEMPLO: Google News RSS (ajusta la query a tu ciudad/país)
@@ -165,10 +172,40 @@ class MobilityNewsController extends Controller
                 ];
             }
 
-            // Limita y ordena por fecha (más reciente primero)
-            return collect($map)->sortBy('minutesAgo')->take(12)->values()->all();
+            // Ordena por fecha (más reciente primero)
+            return collect($map)->sortBy('minutesAgo')->values()->all();
         });
 
-        return response()->json($items);
+        // Parámetros para filtrado/paginación
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = max(1, min(100, (int) $request->query('per_page', 12)));
+        $q = trim((string) $request->query('q', ''));
+        $tag = trim((string) $request->query('tag', ''));
+
+        // Filtrado por búsqueda y etiqueta
+        $filtered = $items;
+        if ($q !== '') {
+            $filtered = array_values(array_filter($filtered, function ($it) use ($q) {
+                return stripos($it['title'] ?? '', $q) !== false || stripos($it['href'] ?? '', $q) !== false;
+            }));
+        }
+        if ($tag !== '') {
+            $tagUp = strtoupper($tag);
+            $filtered = array_values(array_filter($filtered, function ($it) use ($tagUp) {
+                return isset($it['tag']) && strtoupper($it['tag']) === $tagUp;
+            }));
+        }
+
+        $total = count($filtered);
+        $start = ($page - 1) * $perPage;
+        $data = array_slice($filtered, $start, $perPage);
+
+        $meta = [
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ];
+
+        return response()->json(['data' => $data, 'meta' => $meta]);
     }
 }
