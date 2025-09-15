@@ -103,81 +103,7 @@ class MobilityNewsController extends Controller
             // noop: best-effort initialization
         }
         // Cachea 5 minutos para evitar rate limits (guardamos lista completa)
-        $items = Cache::remember('mobility_news', 300, function () {
-
-            // EJEMPLO: Google News RSS (ajusta la query a tu ciudad/país)
-            $rssUrl = 'https://news.google.com/rss/search?q=movilidad%20Bogotá&hl=es-419&gl=CO&ceid=CO:es-419';
-
-            $resp = Http::timeout(8)->get($rssUrl);
-            if (!$resp->ok()) return [];
-
-            // Parseo simple de RSS sin paquetes extra
-            $xml = @simplexml_load_string($resp->body());
-            if (!$xml || !isset($xml->channel->item)) return [];
-
-            $now = Carbon::now();
-            $map = [];
-
-            $idx = 0;
-            foreach ($xml->channel->item as $item) {
-                $title = (string) $item->title;
-                $link  = (string) $item->link;
-                $pub   = isset($item->pubDate) ? Carbon::parse((string)$item->pubDate) : $now;
-
-                // Clasificación rápida por palabras clave
-                $lower = mb_strtolower($title, 'UTF-8');
-                $tag = 'INFO';
-                if (str_contains($lower, 'accidente') || str_contains($lower, 'choque')) $tag = 'INCIDENTE';
-                elseif (str_contains($lower, 'obra') || str_contains($lower, 'mantenimiento') || str_contains($lower, 'cierre')) $tag = 'OBRAS';
-                elseif (str_contains($lower, 'pmt') || str_contains($lower, 'desvío') || str_contains($lower, 'desvio')) $tag = 'ALERTA';
-                elseif (str_contains($lower, 'servicio') || str_contains($lower, 'frecuencia')) $tag = 'SERVICIO';
-                elseif (str_contains($lower, 'aviso') || str_contains($lower, 'comunicado')) $tag = 'AVISO';
-
-                $minutesAgo = (int) round($pub->diffInMinutes($now));
-
-                // Intentar extraer imagen: media:content, enclosure, o fallback a og:image/twitter:image de la página
-                $image = null;
-                if (isset($item->children('media', true)->content)) {
-                    $attrs = $item->children('media', true)->content->attributes();
-                    $image = (string) ($attrs['url'] ?? null);
-                }
-
-                if (!$image && isset($item->enclosure)) {
-                    $encAttrs = $item->enclosure->attributes();
-                    $image = (string) ($encAttrs['url'] ?? null);
-                }
-
-                if (!$image && filter_var($link, FILTER_VALIDATE_URL)) {
-                    $image = $this->extractImageFromHtml($link);
-                    if ($image) {
-                        try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { /* noop */ }
-                    } else {
-                        try { Cache::increment('mobility.image.misses'); } catch (\Throwable $__e) { /* noop */ }
-                    }
-                }
-
-                // Normalizar URLs: si viene de un dominio externo no permitido, proxearlo vía la ruta /img-proxy
-                // Keep original image URL when available. If you need to proxy images,
-                // the `ImageProxyController` is available at `/img-proxy`.
-
-                $map[] = [
-                    'id'         => ++$idx,
-                    'title'      => $title,
-                    'href'       => $link,
-                    'tag'        => $tag,
-                    'minutesAgo' => $minutesAgo,
-                    'publishedAt'=> $pub->toIso8601String(),
-                    'source'     => 'google-news',
-                    'image'      => $image,
-                ];
-            }
-
-            // Asegurar que minutesAgo sea entero y normalizar el mapa
-            foreach ($map as &$row) { $row['minutesAgo'] = (int) ($row['minutesAgo'] ?? 0); } unset($row);
-
-            // Ordena por fecha (más reciente primero)
-            return collect($map)->sortBy('minutesAgo')->values()->all();
-        });
+        $items = self::fetchAndCache();
 
         // Parámetros para filtrado/paginación
         $page = max(1, (int) $request->query('page', 1));
@@ -210,5 +136,91 @@ class MobilityNewsController extends Controller
         ];
 
         return response()->json(['data' => $data, 'meta' => $meta]);
+    }
+
+    /**
+     * Fetch feed, normalize items and cache result.
+     * Public so it can be reused by commands/jobs.
+     *
+     * @return array
+     */
+    public static function fetchAndCache(): array
+    {
+        try {
+            Cache::add('mobility.image.misses', 0, 86400);
+            Cache::add('mobility.image.hits', 0, 86400);
+        } catch (\Throwable $__e) { }
+
+        return Cache::remember('mobility_news', 300, function () {
+            $rssUrl = 'https://news.google.com/rss/search?q=movilidad%20Bogotá&hl=es-419&gl=CO&ceid=CO:es-419';
+
+            $resp = Http::timeout(8)->get($rssUrl);
+            if (!$resp->ok()) return [];
+
+            $xml = @simplexml_load_string($resp->body());
+            if (!$xml || !isset($xml->channel->item)) return [];
+
+            $now = Carbon::now();
+            $map = [];
+            $idx = 0;
+
+            foreach ($xml->channel->item as $item) {
+                $title = (string) $item->title;
+                $link  = (string) $item->link;
+                $pub   = isset($item->pubDate) ? Carbon::parse((string)$item->pubDate) : $now;
+
+                $lower = mb_strtolower($title, 'UTF-8');
+                $tag = 'INFO';
+                if (str_contains($lower, 'accidente') || str_contains($lower, 'choque')) $tag = 'INCIDENTE';
+                elseif (str_contains($lower, 'obra') || str_contains($lower, 'mantenimiento') || str_contains($lower, 'cierre')) $tag = 'OBRAS';
+                elseif (str_contains($lower, 'pmt') || str_contains($lower, 'desvío') || str_contains($lower, 'desvio')) $tag = 'ALERTA';
+                elseif (str_contains($lower, 'servicio') || str_contains($lower, 'frecuencia')) $tag = 'SERVICIO';
+                elseif (str_contains($lower, 'aviso') || str_contains($lower, 'comunicado')) $tag = 'AVISO';
+
+                $minutesAgo = (int) round($pub->diffInMinutes($now));
+
+                $image = null;
+                if (isset($item->children('media', true)->content)) {
+                    $attrs = $item->children('media', true)->content->attributes();
+                    $image = (string) ($attrs['url'] ?? null);
+                }
+
+                if (!$image && isset($item->enclosure)) {
+                    $encAttrs = $item->enclosure->attributes();
+                    $image = (string) ($encAttrs['url'] ?? null);
+                }
+
+                if (!$image && filter_var($link, FILTER_VALIDATE_URL)) {
+                    try {
+                        // Use a short-lived client to attempt extraction; keep caller context
+                        $ctl = new self();
+                        $image = $ctl->extractImageFromHtml($link);
+                    } catch (\Throwable $__e) {
+                        $image = null;
+                    }
+
+                    if ($image) {
+                        try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { }
+                    } else {
+                        try { Cache::increment('mobility.image.misses'); } catch (\Throwable $__e) { }
+                    }
+                }
+
+                $map[] = [
+                    'id'         => ++$idx,
+                    'title'      => $title,
+                    'href'       => $link,
+                    'tag'        => $tag,
+                    'minutesAgo' => $minutesAgo,
+                    'publishedAt'=> $pub->toIso8601String(),
+                    'source'     => 'google-news',
+                    'image'      => $image,
+                ];
+            }
+
+            foreach ($map as &$row) { $row['minutesAgo'] = (int) ($row['minutesAgo'] ?? 0); } unset($row);
+
+            return collect($map)->sortBy('minutesAgo')->values()->all();
+        });
     }
 }
