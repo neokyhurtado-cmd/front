@@ -114,9 +114,10 @@ document.addEventListener('alpine:init', () => {
     error: null,
 
     timeAgo(mins){
-      if (mins < 60) return `hace ${mins} min`;
-      const h = Math.floor(mins/60), m = mins%60;
-      return `hace ${h} h ${m} min`;
+      const mInt = Math.max(0, parseInt(mins ?? 0, 10) || 0);
+      if (mInt < 60) return `hace ${mInt} min`;
+      const h = Math.floor(mInt/60), m = mInt%60;
+      return m ? `hace ${h} h ${m} min` : `hace ${h} h`;
     },
 
     async fetchNews(){
@@ -124,7 +125,9 @@ document.addEventListener('alpine:init', () => {
       try {
         const res = await fetch('/api/mobility/news', { headers: { 'Accept': 'application/json' }});
         if(!res.ok) throw new Error('Error de red');
-        this.items = await res.json();
+        const data = await res.json();
+        // API returns { data: [...], meta: {...} }
+        this.items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
       } catch (e) {
         this.error = 'No se pudieron cargar las noticias.';
         this.items = [
