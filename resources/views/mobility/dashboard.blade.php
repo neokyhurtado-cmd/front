@@ -32,46 +32,103 @@
 
         <main class="col-span-12 lg:col-span-8">
           <div class="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 class="text-2xl font-bold mb-4 text-gray-900">Destacadas</h2>
 
-            <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              <h2 class="text-lg font-semibold">Destacadas</h2>
+              <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <input
+                  type="search"
+                  placeholder="Buscar por título..."
+                  class="w-full sm:w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  x-model.debounce.300ms="q"
+                  @input.debounce.300ms="applyClientFilters()"
+                />
+                <div class="flex flex-wrap gap-2">
+                  <template x-for="t in tags" :key="t">
+                    <button
+                      type="button"
+                      class="rounded-xl px-2.5 py-1 text-xs border"
+                      :class="selectedTags.has(t) ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-700 hover:bg-slate-100'"
+                      @click="toggleTag(t)"
+                      x-text="t"
+                    ></button>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div x-show="error" class="mb-3 rounded-xl border border-red-200 bg-red-50 text-red-800 px-3 py-2 text-sm" x-text="error"></div>
+
+            <!-- Loading skeleton -->
+            <div x-show="loading" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <template x-for="i in 4" :key="i">
+                <div class="rounded-2xl border border-slate-200 p-4 animate-pulse">
+                  <div class="w-full aspect-[16/9] bg-slate-100 rounded-xl mb-3"></div>
+                  <div class="h-3 w-20 bg-slate-100 rounded mb-2"></div>
+                  <div class="h-4 w-11/12 bg-slate-100 rounded mb-1.5"></div>
+                  <div class="h-4 w-9/12 bg-slate-100 rounded"></div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Empty -->
+            <div x-show="empty && !loading && !error" class="rounded-xl border border-slate-200 px-4 py-6 text-center text-slate-500">
+              No hay resultados para los filtros actuales.
+            </div>
+
+            <div id="cards" x-show="!loading" x-cloak class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Hero card -->
-              <template x-if="items.length">
+              <template x-if="filtered.length">
                 <article class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
                   <div class="w-full aspect-[21/9] bg-gray-100 overflow-hidden">
-                    <template x-if="items[0].image">
-                      <img :src="'/img-proxy?url=' + encodeURIComponent(items[0].image)" class="w-full h-full object-cover" loading="lazy" />
+                    <template x-if="filtered[0].image">
+                      <img :src="`/img-proxy?url=${encodeURIComponent(filtered[0].image)}`" class="w-full h-full object-cover" loading="lazy" />
                     </template>
-                    <template x-if="!items[0].image">
+                    <template x-if="!filtered[0].image">
                       <div class="w-full h-full grid place-items-center text-slate-400 text-4xl">📍</div>
                     </template>
                   </div>
-                  <div class="p-4">
-                    <h3 class="font-bold text-gray-900 text-lg leading-tight mb-1" x-text="items[0].title"></h3>
-                    <div class="text-xs text-gray-500" x-text="timeAgo(items[0].minutesAgo)"></div>
+                  <div class="p-5 space-y-3">
+                    <div class="flex items-center gap-2">
+                      <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium" :class="tagClass(filtered[0].tag)" x-text="filtered[0].tag"></span>
+                      <span class="text-xs text-slate-500" x-text="timeAgo(filtered[0].minutesAgo)"></span>
+                    </div>
+                    <h3 class="text-base font-semibold leading-snug" x-text="filtered[0].title"></h3>
+                  </div>
+                  <div class="p-5 pt-0">
+                    <a :href="filtered[0].href" target="_blank" rel="noreferrer noopener" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-3 py-2 text-sm hover:bg-black">Leer fuente ↗</a>
                   </div>
                 </article>
               </template>
 
               <!-- Other cards -->
-              <template x-for="it in (items.slice ? items.slice(1) : items)" :key="it.id">
-                <article class="bg-white rounded-xl border border-gray-200 shadow-md h-80 flex flex-col overflow-hidden">
-                  <div class="h-44 bg-gray-100 flex items-center justify-center">
-                      <template x-if="it.image">
-                        <img :src="'/img-proxy?url=' + encodeURIComponent(it.image)" class="w-full h-full object-cover" loading="lazy" />
-                      </template>
-                      <template x-if="!it.image">
-                        <div class="w-full h-full flex items-center justify-center text-xs text-gray-500">Sin imagen</div>
-                      </template>
+              <template x-for="it in (filtered.slice ? filtered.slice(1) : filtered)" :key="it.id">
+                <article class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="w-full aspect-[16/9] bg-slate-100 overflow-hidden rounded-t-2xl">
+                    <template x-if="it.image">
+                      <img :src="`/img-proxy?url=${encodeURIComponent(it.image)}`" alt="" class="w-full h-full object-cover" loading="lazy">
+                    </template>
+                    <template x-if="!it.image">
+                      <div class="w-full h-full grid place-items-center text-slate-400 text-3xl">📰</div>
+                    </template>
+                  </div>
+                  <div class="p-4 space-y-3">
+                    <div class="flex items-center gap-2">
+                      <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium" :class="tagClass(it.tag)" x-text="it.tag"></span>
+                      <span class="text-xs text-slate-500" x-text="timeAgo(it.minutesAgo)"></span>
                     </div>
-                  <div class="p-4 flex-1 flex flex-col">
-                    <span class="inline-block text-xs font-bold text-blue-600 uppercase bg-blue-50 px-2 py-1 rounded mb-2" x-text="it.tag || 'MOVILIDAD'"></span>
-                    <h3 class="font-bold text-gray-900 text-sm leading-tight mb-2 line-clamp-3 flex-grow" x-text="it.title"></h3>
-                    <p class="text-xs text-gray-500 mb-3" x-text="timeAgo(it.minutesAgo)"></p>
-                    <a :href="it.href" target="_blank" class="block w-full text-xs text-white font-medium bg-blue-600 py-2 px-3 rounded text-center">Leer fuente</a>
+                    <h3 class="text-sm font-medium leading-snug line-clamp-2" x-text="it.title"></h3>
+                  </div>
+                  <div class="p-4 pt-0">
+                    <a :href="it.href" target="_blank" rel="noreferrer noopener" class="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-3 py-2 text-sm hover:bg-black w-full justify-center">Leer fuente ↗</a>
                   </div>
                 </article>
               </template>
+            </div>
+
+            <div class="mt-4 flex justify-center" x-show="hasMore && !loading && !error">
+              <button @click="loadMore" class="rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50">Cargar más</button>
             </div>
 
           </div>
@@ -103,6 +160,7 @@
 <script defer>
 document.addEventListener('alpine:init', () => {
   Alpine.data('dashboard', () => ({
+    // Estado
     benefits: [
       { title: 'Alertas en tiempo real', text: 'Notificaciones de PMT y desvíos en vivo.' },
       { title: 'Ejecución más rápida', text: 'Decisiones con datos minuto a minuto.' },
@@ -110,33 +168,97 @@ document.addEventListener('alpine:init', () => {
       { title: 'Integración sencilla', text: 'REST/JSON con ejemplos de código.' },
     ],
     items: [],
+    filtered: [],
     loading: false,
     error: null,
+    empty: false,
 
+    // Filtros
+    q: '',
+    tags: ['ALERTA','INCIDENTE','OBRAS','SERVICIO','AVISO','INFO'],
+    selectedTags: new Set(),
+
+    // Paginación
+    page: 1,
+    perPage: 12,
+    hasMore: true,
+
+    // Utils
     timeAgo(mins){
+      mins = Math.max(0, parseInt(mins ?? 0, 10));
       if (mins < 60) return `hace ${mins} min`;
       const h = Math.floor(mins/60), m = mins%60;
-      return `hace ${h} h ${m} min`;
+      return m ? `hace ${h} h ${m} min` : `hace ${h} h`;
+    },
+    tagClass(tag){
+      const map = {
+        'ALERTA': 'bg-red-100 text-red-700',
+        'INCIDENTE': 'bg-amber-100 text-amber-800',
+        'OBRAS': 'bg-yellow-100 text-yellow-800',
+        'SERVICIO': 'bg-blue-100 text-blue-700',
+        'AVISO': 'bg-teal-100 text-teal-800',
+        'INFO': 'bg-slate-100 text-slate-700',
+      };
+      return map[tag] || 'bg-slate-100 text-slate-700';
     },
 
-    async fetchNews(){
+    applyClientFilters(){
+      const q = this.q.trim().toLowerCase();
+      const filterByQ = (it) => !q || (it.title && it.title.toLowerCase().includes(q));
+      const hasTagSel = this.selectedTags.size > 0;
+      const filterByTag = (it) => !hasTagSel || this.selectedTags.has(it.tag);
+      this.filtered = this.items.filter(it => filterByQ(it) && filterByTag(it));
+      this.empty = this.filtered.length === 0 && !this.loading && !this.error;
+    },
+
+    toggleTag(tag){
+      if (this.selectedTags.has(tag)) this.selectedTags.delete(tag);
+      else this.selectedTags.add(tag);
+      this.applyClientFilters();
+    },
+
+    async fetchNews({ append=false } = {}){
       this.loading = true; this.error = null;
+
       try {
-        const res = await fetch('/api/mobility/news', { headers: { 'Accept': 'application/json' }});
-        if(!res.ok) throw new Error('Error de red');
-        this.items = await res.json();
-      } catch (e) {
+        const url = `/api/mobility/news?page=${this.page}&per_page=${this.perPage}&q=${encodeURIComponent(this.q)}`;
+        const res = await fetch(url, { headers: { 'Accept':'application/json' }});
+        if(!res.ok) throw new Error('network');
+        const data = await res.json();
+
+        const list = Array.isArray(data) ? data : (data.data ?? []);
+        const meta = data.meta ?? {};
+        if (append) this.items = [...this.items, ...list];
+        else this.items = list;
+
+        // hasMore: si hay total y meta
+        if (meta.total != null && meta.page != null && meta.per_page != null) {
+          const served = meta.page * meta.per_page;
+          this.hasMore = served < meta.total;
+        } else {
+          // fallback si no hay meta: asume hasMore si recibimos un full page
+          this.hasMore = list.length === this.perPage;
+        }
+
+        this.applyClientFilters();
+      } catch(e) {
         this.error = 'No se pudieron cargar las noticias.';
-        this.items = [
-          { id: 1, title: 'Ejemplo local: cierre en la Av. 80', href:'#', tag:'ALERTA', minutesAgo: 12 },
-          { id: 2, title: 'Ejemplo local: ajuste de frecuencias TM', href:'#', tag:'SERVICIO', minutesAgo: 35 },
-        ];
       } finally {
         this.loading = false;
+        this.empty = this.filtered.length === 0 && !this.loading && !this.error;
       }
     },
 
-    async actualizar(){ await this.fetchNews(); }
+    async actualizar(){
+      this.page = 1;
+      await this.fetchNews({ append:false });
+    },
+
+    async loadMore(){
+      if (!this.hasMore || this.loading) return;
+      this.page += 1;
+      await this.fetchNews({ append:true });
+    }
   }));
 });
 </script>

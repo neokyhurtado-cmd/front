@@ -792,6 +792,9 @@
     to { transform: rotate(360deg); }
   }
 
+  /* Alpine x-cloak helper */
+  [x-cloak] { display: none !important; }
+
   /* Estilos específicos para la portada */
   .news-scope.portada-theme {
     background-color: #f9fafb;
