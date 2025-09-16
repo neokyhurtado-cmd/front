@@ -29,15 +29,42 @@ class MobilityNewsController extends Controller
     private function extractImageFromHtml(string $url): ?string
     {
         try {
-            $resp = Http::withOptions(['allow_redirects' => ['max' => 4], 'timeout' => 6])->get($url);
-            if (!$resp->ok()) return null;
+            $resp = Http::withOptions([
+                'allow_redirects' => ['max' => 4],
+                'timeout' => 6,
+            ])->get($url);
+
+            if (!$resp->ok()) {
+                Log::debug('extractImageFromHtml: http not ok', ['url' => $url, 'status' => (method_exists($resp, 'status') ? $resp->status() : null)]);
+                return null;
+            }
+
             $html = $resp->body();
 
+            // (1) Detect <base href="..."> to resolve relative URLs properly
+            $docBase = null;
+            if (preg_match('/<base[^>]+href=["\']([^"\']+)["\']/i', $html, $bm)) {
+                $docBase = html_entity_decode($bm[1], ENT_QUOTES);
+            }
+
+            // helper to absolutize and reject non-http image schemes
+            $makeAbs = function (string $candidate) use ($url, $resp, $docBase) {
+                $base = $docBase ?: (method_exists($resp, 'effectiveUri') && $resp->effectiveUri() ? $resp->effectiveUri() : $url);
+                $abs = $this->absolutize($base, $candidate);
+                if ($abs === null) return null;
+                // reject data/javascript/mailto schemes
+                if (preg_match('#^(data:|javascript:|mailto:)#i', $abs)) return null;
+                return $abs;
+            };
+
             $candidates = [];
-            // meta tags
+            // meta tags (og/twitter/link)
             if (preg_match('/<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m)) $candidates[] = $m[1];
-            if (preg_match('/<meta[^>]+name=["\']twitter:image(:src)?["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m2)) $candidates[] = $m2[count($m2)-1];
+            if (preg_match('/<meta[^>]+name=["\']twitter:image(?::src)?["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m2)) $candidates[] = $m2[1];
             if (preg_match('/<link[^>]+rel=["\']image_src["\'][^>]+href=["\']([^"\']+)["\']/i', $html, $m3)) $candidates[] = $m3[1];
+            // minor fallbacks
+            if (preg_match('/<meta[^>]+itemprop=["\']image["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $mi)) $candidates[] = $mi[1];
+            if (preg_match('/<meta[^>]+name=["\']image["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $mn)) $candidates[] = $mn[1];
 
             // srcset or data-srcset in meta/img tags
             if (preg_match_all('/<([^>]+)srcset=["\']([^"\']+)["\']/i', $html, $ss)) {
@@ -65,15 +92,62 @@ class MobilityNewsController extends Controller
 
             // Normalize and pick first valid image (prefer largest by extension or srcset choice)
             foreach ($candidates as $cand) {
-                $cand = trim(html_entity_decode($cand));
+                $cand = trim(html_entity_decode($cand, ENT_QUOTES));
                 if (empty($cand)) continue;
-                $abs = $this->absolutize($resp->effectiveUri() ?? $url, $cand);
-                if (preg_match('/\.(jpg|jpeg|png|webp)(\?.*)?$/i', $abs)) return $abs;
+                $abs = $makeAbs($cand);
+                if (!$abs) continue;
+                if (preg_match('/\.(jpe?g|png|webp|gif)(\?.*)?$/i', $abs)) {
+                    try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { }
+                    return $abs;
+                }
             }
+
+            // --- Fallback: inspect <img> tags and pick largest from srcset or src
+            if (preg_match_all('/<img[^>]+>/i', $html, $imgs)) {
+                $best = null; $bestW = -1;
+                foreach ($imgs[0] as $img) {
+                    // srcset
+                    if (preg_match('/\s+srcset=["\']([^"\']+)["\']/', $img, $mm)) {
+                        $srcset = $mm[1];
+                        foreach (preg_split('/\s*,\s*/', $srcset) as $part) {
+                            if (preg_match('/^\s*([^ ]+)\s+(\d+)w\s*$/', trim($part), $pp)) {
+                                $abs = $makeAbs(html_entity_decode($pp[1], ENT_QUOTES));
+                                if (!$abs) continue;
+                                $w = (int) $pp[2];
+                                if ($w > $bestW && preg_match('/\.(jpe?g|png|webp|gif)(\?.*)?$/i', $abs)) {
+                                    $best = $abs; $bestW = $w;
+                                }
+                            }
+                        }
+                    }
+                    // src / data-src
+                    if (!$best && preg_match('/\s(?:data-)?src=["\']([^"\']+)["\']/', $img, $sm)) {
+                        $abs = $makeAbs(html_entity_decode($sm[1], ENT_QUOTES));
+                        if (!$abs) continue;
+                        if (preg_match('/\.(jpe?g|png|webp|gif)(\?.*)?$/i', $abs)) {
+                            $best = $abs; $bestW = 0;
+                        }
+                    }
+                }
+                if ($best) {
+                    try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { }
+                    return $best;
+                }
+            }
+
+            try { Cache::increment('mobility.image.misses'); } catch (\Throwable $__e) { }
+            return null;
+
         } catch (\Throwable $e) {
+            // Log exception for debugging without breaking extraction flow
+            Log::debug('extractImageFromHtml exception', [
+                'url' => $url,
+                'msg' => $e->getMessage(),
+                'line'=> $e->getLine(),
+                'file'=> $e->getFile(),
+            ]);
             return null;
         }
-        return null;
     }
 
     private function pickFromSrcset(string $srcset): ?string
