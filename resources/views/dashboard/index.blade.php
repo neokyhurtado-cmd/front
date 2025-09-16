@@ -175,39 +175,6 @@
         </div>
     </div>
 
-        {{-- Mobility Stage (mock cards) --}}
-        <div class="news-scope">
-            <section class="stage rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold text-zinc-100">Movilidad — Destacadas</h2>
-                    <div>
-                        <button x-data @click="$dispatch('refresh-mobility')" class="text-sm text-cyan-300">Actualizar</button>
-                    </div>
-                </div>
-
-                <div x-data="dashboard()" x-init="fetchNews()" class="space-y-4">
-                    <div x-show="loading" class="animate-pulse">
-                        <div class="h-48 bg-zinc-800 rounded-md"></div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" x-show="!loading">
-                        <template x-for="item in filtered" :key="item.id">
-                            <article class="card-mock rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900/40">
-                                <div class="relative">
-                                    <div class="w-full h-40 bg-zinc-800 object-cover"></div>
-                                    <div class="badge-breaking absolute top-2 left-2 text-xs px-2 py-1 rounded">ALERTA</div>
-                                </div>
-                                <div class="p-3">
-                                    <h3 class="text-sm font-semibold text-zinc-100" x-text="item.title"></h3>
-                                    <div class="meta-row text-xs text-zinc-400 mt-2"> <span x-text="item.minutesAgo + ' min' "></span> · <span x-text="(new URL(item.href||'#')).hostname"></span></div>
-                                </div>
-                            </article>
-                        </template>
-                    </div>
-
-                    <div x-show="error" class="text-sm text-red-400"> <span x-text="error"></span> </div>
-                </div>
-            </section>
-        </div>
+                {{-- Mobility Stage removed (use /mobility-dashboard route) --}}
 </div>
 @endsection
