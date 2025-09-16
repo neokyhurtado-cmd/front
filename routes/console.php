@@ -12,6 +12,8 @@ Artisan::command('inspire', function () {
 Schedule::command('feeds:fetch')->hourly()->withoutOverlapping();
 // Mobility feed refresh
 Schedule::command('mobility:refresh')->everyFiveMinutes()->withoutOverlapping();
+// Background image extraction for mobility feed (console-only extractor)
+Schedule::command('mobility:refresh-images --limit=150')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('posts:schedule-daily')->dailyAt('07:55');   // prepara slots del día
 Schedule::command('posts:publish-due')->everyMinute();         // publica en la hora exacta
 Schedule::command('posts:rotate-monthly')->monthlyOn(1, '03:10');
