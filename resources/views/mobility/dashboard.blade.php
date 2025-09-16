@@ -146,4 +146,21 @@ document.addEventListener('alpine:init', () => {
 @endsection
 <script>
   // If Alpine already started before this inline component, ensure it initializes
+<script>
+  // Fallback: try to call fetchNews on the Alpine component if it didn't run
+  (function(){
+    try{
+      const el = document.querySelector('.news-scope');
+      if(!el) return;
+      const tryCall = () => {
+        try {
+          const comp = el.__x && el.__x.$data ? el.__x : (el.__x ? el.__x : null);
+          if (comp && typeof comp.fetchNews === 'function') { comp.fetchNews(); return true; }
+        } catch(err) { /* ignore */ }
+        return false;
+      };
+      if (!tryCall()) setTimeout(tryCall, 200);
+    }catch(e){}
+  })();
+</script>
   try { if (window.Alpine && typeof window.Alpine.initTree === 'function') { const el = document.querySelector('.news-scope'); if(el) window.Alpine.initTree(el); } } catch(e){/* noop */}
