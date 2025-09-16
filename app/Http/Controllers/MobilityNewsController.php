@@ -265,17 +265,22 @@ class MobilityNewsController extends Controller
                 }
 
                 if (!$image && filter_var($link, FILTER_VALIDATE_URL)) {
-                    try {
-                        // Use a short-lived client to attempt extraction; keep caller context
-                        $ctl = new self();
-                        $image = $ctl->extractImageFromHtml($link);
-                    } catch (\Throwable $__e) {
-                        $image = null;
-                    }
+                    // Avoid performing slow external HTTP extraction during web requests
+                    if (app()->runningInConsole()) {
+                        try {
+                            $ctl = new self();
+                            $image = $ctl->extractImageFromHtml($link);
+                        } catch (\Throwable $__e) {
+                            $image = null;
+                        }
 
-                    if ($image) {
-                        try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { }
+                        if ($image) {
+                            try { Cache::increment('mobility.image.hits'); } catch (\Throwable $__e) { }
+                        } else {
+                            try { Cache::increment('mobility.image.misses'); } catch (\Throwable $__e) { }
+                        }
                     } else {
+                        // For web requests, skip extraction to keep responses fast; count as miss
                         try { Cache::increment('mobility.image.misses'); } catch (\Throwable $__e) { }
                     }
                 }
