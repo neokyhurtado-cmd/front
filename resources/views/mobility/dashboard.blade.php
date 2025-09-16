@@ -144,3 +144,6 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 @endsection
+<script>
+  // If Alpine already started before this inline component, ensure it initializes
+  try { if (window.Alpine && typeof window.Alpine.initTree === 'function') { const el = document.querySelector('.news-scope'); if(el) window.Alpine.initTree(el); } } catch(e){/* noop */}
