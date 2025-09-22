@@ -1,0 +1,13 @@
+.idea/
+.vscode/
+node_modules/
+/.env
+/.env.*
+frontend/node_modules/
+frontend/node_modules/.vite/
+frontend/dist/
+vendor/
+storage/
+public/build/
+.DS_Store
+*.log
