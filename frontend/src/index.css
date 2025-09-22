@@ -1,0 +1,44 @@
+:root {
+  --brand: #2563eb;
+}
+
+html, body, #root { height: 100%; }
+body { margin: 0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background-color: #f4f4f4; color: #333 }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 20px }
+
+/* Modal / pop animation */
+@keyframes modal-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-pop { animation: modal-pop 240ms cubic-bezier(.2,.9,.25,1); }
+
+/* Ensure dialog starts slightly smaller for pop effect and uses transform origin */
+[role="dialog"] { transform-origin: center center; }
+
+/* Backdrop: smooth fade */
+.backdrop-hidden { opacity: 0; pointer-events: none; }
+.backdrop-visible { opacity: 1; pointer-events: auto; }
+
+/* Backdrop fade */
+.backdrop-fade { transition: opacity 180ms ease-out; }
+
+/* Backdrop fade handled via bg-opacity + transition on parent */
+
+/* Ripple */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  transform: scale(0);
+  animation: ripple 500ms ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple {
+  to { transform: scale(2); opacity: 0; }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8095
+Date: Mon, 22 Sep 2025 05:04:34 GMT
+Connection: close
+Content-Type: image/jpeg
+Content-Length: 35647
+

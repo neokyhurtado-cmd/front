@@ -1,0 +1,38 @@
+export const contacts = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john.doe@example.com",
+    phone: "123-456-7890",
+    address: "123 Main St, Anytown, USA",
+    company: "Doe Enterprises",
+    notes: "Important client.",
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    email: "jane.smith@example.com",
+    phone: "987-654-3210",
+    address: "456 Elm St, Othertown, USA",
+    company: "Smith LLC",
+    notes: "Follow up next week.",
+  },
+  {
+    id: 3,
+    name: "Alice Johnson",
+    email: "alice.johnson@example.com",
+    phone: "555-123-4567",
+    address: "789 Oak St, Sometown, USA",
+    company: "Johnson Corp",
+    notes: "Potential partnership opportunity.",
+  },
+  {
+    id: 4,
+    name: "Bob Brown",
+    email: "bob.brown@example.com",
+    phone: "555-765-4321",
+    address: "321 Pine St, Anycity, USA",
+    company: "Brown Industries",
+    notes: "Needs a follow-up call.",
+  },
+];

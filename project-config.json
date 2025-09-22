@@ -1,0 +1,80 @@
+{
+  "project": {
+    "name": "CRM Vite React + Laravel",
+    "version": "1.0.0",
+    "description": "Sistema CRM con frontend React+Vite y backend Laravel",
+    "environment": "development"
+  },
+  "paths": {
+    "root": "c:\\laragon\\www\\INICIO\\crm-vite-react",
+    "frontend": "c:\\laragon\\www\\INICIO\\crm-vite-react\\frontend",
+    "backend": "c:\\laragon\\www\\INICIO\\crm-vite-react\\laravel-backend",
+    "scripts": "c:\\laragon\\www\\INICIO\\crm-vite-react\\scripts",
+    "resources": "c:\\laragon\\www\\INICIO\\crm-vite-react\\resources"
+  },
+  "servers": {
+    "laravel": {
+      "host": "127.0.0.1",
+      "port": 8095,
+      "url": "http://127.0.0.1:8095"
+    },
+    "vite": {
+      "host": "127.0.0.1",
+      "port": 5174,
+      "url": "http://127.0.0.1:5174"
+    },
+    "n8n": {
+      "host": "127.0.0.1",
+      "port": 5678,
+      "url": "http://127.0.0.1:5678"
+    },
+    "database": {
+      "type": "sqlite",
+      "path": "database/database.sqlite"
+    }
+  },
+  "dependencies": {
+    "php": "^8.2",
+    "composer": "^2.0",
+    "node": "^18.0",
+    "npm": "^9.0"
+  },
+  "commands": {
+    "laravel": {
+      "serve": "php artisan serve --host 127.0.0.1 --port 8095",
+      "migrate": "php artisan migrate",
+      "seed": "php artisan db:seed",
+      "fresh": "php artisan migrate:fresh --seed",
+      "queue": "php artisan queue:work",
+      "cache": "php artisan cache:clear && php artisan config:clear && php artisan route:clear"
+    },
+    "frontend": {
+      "dev": "npm run dev -- --host 127.0.0.1 --port 5174",
+      "build": "npm run build",
+      "preview": "npm run preview",
+      "install": "npm install"
+    },
+    "n8n": {
+      "start": "n8n start --port 5678",
+      "tunnel": "n8n start --tunnel"
+    }
+  },
+  "proxy": {
+    "/api": {
+      "target": "http://127.0.0.1:8095",
+      "changeOrigin": true,
+      "secure": false
+    },
+    "/storage": {
+      "target": "http://127.0.0.1:8095",
+      "changeOrigin": true,
+      "secure": false
+    }
+  },
+  "features": {
+    "hot_reload": true,
+    "cors_enabled": true,
+    "api_prefix": "/api/v1",
+    "debug_mode": true
+  }
+}
