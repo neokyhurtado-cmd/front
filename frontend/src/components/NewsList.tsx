@@ -79,7 +79,7 @@ export default function NewsList() {
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
         {items.map(it => (
           <NewsCard key={it.id} id={it.id} slug={it.slug} title={it.title} image={it.image} excerpt={it.excerpt} onRead={(s) => open(s)} />
         ))}
