@@ -1,0 +1,104 @@
+/* Card animation styles adapted from user-provided CSS */
+body{background-color:transparent;margin:0;padding:0}
+.cards-wrapper{display:flex;flex-wrap:wrap;gap:20px}
+.card{
+  flex:1 0 300px;
+  height:440px;
+  background:#111;
+  border:1px solid rgba(0,0,0,0.08);
+  box-shadow:0px 8px 18px rgba(0,0,0,.28);
+  cursor:pointer;
+  transition:all .5s cubic-bezier(.8,.5,.2,1.4);
+  overflow:hidden;
+  position:relative;
+}
+.card img{position:absolute;top:0;left:0;width:100%;height:100%;transition:all .5s cubic-bezier(.8,.5,.2,1.4);object-fit:cover;z-index:0;filter:brightness(.58) contrast(1.02)}
+.card-footer{position:absolute;left:0;bottom:0;width:100%;height:40%;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.88) 100%);z-index:2;transition:opacity .22s ease, transform .22s ease;color:#fff}
+
+.card-footer-top{display:flex;flex-direction:column;justify-content:flex-start;height:100%}
+.card-footer-date{position:absolute;left:14px;bottom:10px}
+.descriptions{position:absolute;top:0;left:0;background-color:rgba(0,0,0,0.42);width:100%;height:100%;padding:20px;box-sizing:border-box;overflow:auto;color:#fff;opacity:0;transform:translateY(8px);transition:opacity .22s ease, transform .22s ease}
+.card:hover .descriptions{opacity:1;transform:translateY(0)}
+.card:hover{transition:all .5s cubic-bezier(.8,.5,.2,1.4);box-shadow:0px 6px 12px rgba(0,0,0,.3);transform:translateY(-6px)}
+.card:hover img{transition:all .5s cubic-bezier(.8,.5,.2,1.4);transform:scale(1.04);filter:brightness(.6) saturate(1.02);opacity:0.98}
+.card:hover .card-footer{opacity:0;transform:translateY(6px);pointer-events:none}
+.card.open .card-footer{opacity:0;transform:translateY(6px);pointer-events:none}
+
+.descriptions{z-index:3}
+
+/* Full content area inside card overlay */
+.card-full-content{color:#fff;line-height:1.6}
+.card-full-content p{margin:0 0 0.75rem}
+.card-full-content h2{margin:0 0 0.5rem;color:#fff}
+.card-full-content a{color:#9ec5ff}
+
+/* Live badge */
+.live-badge{position:absolute;top:12px;left:12px;background:#e11d48;color:#fff;padding:6px 8px;border-radius:4px;font-size:12px;font-weight:700;z-index:4;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+
+/* Photo variant: full photo card with readable text over a translucent white sheet */
+.card.photo img{filter:brightness(.42) contrast(1.05) saturate(.95);transform-origin:center center}
+.card.photo .card-footer{display:none}
+.card.photo .white-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.72);z-index:2;pointer-events:none}
+.card.photo .descriptions{color:#111;background:transparent;opacity:1;transform:none;padding:28px 24px;z-index:3}
+.card.photo .descriptions h1{color:#111}
+.card.photo .descriptions p, .card.photo .descriptions .content-inner{color:#222}
+
+/* Hover / open state: make overlay darker and text white + bold for readability */
+.card:hover .descriptions,
+.card.open .descriptions{
+  background-color:rgba(0,0,0,0.56) !important;
+  color:#fff !important;
+  opacity:1 !important;
+  transform:none !important;
+}
+.card:hover .descriptions h1,
+.card.open .descriptions h1{
+  color:#fff !important;
+  font-weight:700;
+}
+.card:hover .descriptions p,
+.card.open .descriptions p,
+.card:hover .descriptions .content-inner,
+.card.open .descriptions .content-inner{
+  color:#fff !important;
+  font-weight:600;
+}
+
+/* Photo variant hover: make the white sheet slightly transparent so white text reads above darker overlay */
+.card.photo:hover .white-overlay,
+.card.photo.open .white-overlay{
+  background:rgba(255,255,255,0.28);
+}
+
+/* Split variant (non-photo): make footer a light background and text a readable gray */
+.card:not(.photo) .card-footer{background:linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(250,250,250,1) 100%);color:transparent;}
+.card:not(.photo) .card-footer h1{color:#374151}
+.card:not(.photo) .card-footer p{color:#6b7280}
+
+/* Classic split layout: left 50% image, right 50% white content stripe */
+.split{display:flex;width:100%;height:100%;}
+.split-left,.split-right{width:50%;height:100%;box-sizing:border-box}
+.split-left{position:relative;overflow:hidden}
+/* override global absolute image for split-left so image sits inside left column */
+.split-left img{position:relative !important;top:auto !important;left:auto !important;width:100%;height:100%;object-fit:cover;transform:none;filter:brightness(1) contrast(1);z-index:0}
+.split-right{background:#fff;padding:20px 22px;display:flex;flex-direction:column;color:#111}
+.split-content{display:flex;flex-direction:column;flex:1;min-height:0}
+.split-content h1{margin:0;color:#111;font-size:1.125rem;line-height:1.2}
+.split-content p{color:#374151;margin-top:0.5rem;line-height:1.4;flex:1;min-height:0}
+.split-footer{align-self:flex-start;color:#6b7280;font-size:0.875rem;margin-top:12px}
+
+/* Small screens: stack vertically, image on top */
+@media (max-width:768px){
+  .split{flex-direction:column}
+  .split-left,.split-right{width:100%;height:50vh}
+  .split-right{padding:14px}
+}
+
+.descriptions h1{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.6)}
+.descriptions p{color:rgba(255,255,255,0.95)}
+.card h1{color:#111;margin:0}
+.card p{line-height:24px}
+.card .content-inner{max-height:calc(100% - 60px);overflow:auto}
+
+/* mobile: show overlay on tap (class .open) */
+.card.open .descriptions{opacity:1;transform:translateY(0)}

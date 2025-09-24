@@ -1,5 +1,7 @@
 import React from 'react'
 import NewsList from '../components/NewsList'
+import ServicesList from '../components/ServicesList'
+import PartnersList from '../components/PartnersList'
 
 export default function NewsPage() {
   return (
@@ -34,6 +36,10 @@ export default function NewsPage() {
 
         <main className="col-span-1 lg:col-span-8">
           <NewsList />
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold mb-4">Servicios</h2>
+            <ServicesList />
+          </div>
         </main>
 
         <aside className="hidden lg:block lg:col-span-2">
@@ -48,6 +54,9 @@ export default function NewsPage() {
                 <li><a href="#" className="text-blue-600">Noticia reciente A</a></li>
                 <li><a href="#" className="text-blue-600">Noticia reciente B</a></li>
               </ul>
+            </div>
+            <div className="mt-4">
+              <PartnersList />
             </div>
           </div>
         </aside>

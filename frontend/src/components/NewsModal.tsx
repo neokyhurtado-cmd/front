@@ -71,7 +71,13 @@ export default function NewsModal({ open, onClose, title, image, content }: Prop
         <div className="md:flex">
           {image && (
             <div className="md:w-1/3 bg-gray-100">
-                <img src={(image && image.startsWith('/') ? `http://127.0.0.1:8095${image}` : image)} alt="" className="w-full h-48 md:h-full object-cover" onError={(e) => (e.currentTarget.src = '/img/placeholder.svg')} />
+                {
+                  (() => {
+                    const BASE = (import.meta.env.VITE_APP_URL || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8095') as string
+                    const src = (image.startsWith('/img/') || image.startsWith('/assets/')) ? image : (image.startsWith('/') ? `${BASE}${image}` : image)
+                    return <img src={src} alt="" className="w-full h-48 md:h-full object-cover" onError={(e) => (e.currentTarget.src = '/img/placeholder.svg')} />
+                  })()
+                }
               </div>
           )}
           <div className="p-6 md:flex-1">
