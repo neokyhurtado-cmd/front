@@ -3,7 +3,7 @@ Tests for capacity analysis calculations.
 """
 
 import pytest
-from capacity.core import compute_capacity, compute_adjusted_capacity, get_capacity_recommendations
+from panorama_local.capacity.core import compute_capacity, compute_adjusted_capacity, get_capacity_recommendations
 
 
 def test_compute_capacity_basic():

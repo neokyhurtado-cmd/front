@@ -2,10 +2,10 @@ import streamlit as st
 import json
 import os
 import logging
-from modules import simulation, crm
-from capacity.core import compute_capacity, get_capacity_recommendations
-from exports.zip import export_projects_zip, fetch_project_files
-from exports.pdf import render_project_pdf
+from .modules import simulation, crm
+from .capacity.core import compute_capacity, get_capacity_recommendations
+from .exports.zip import export_projects_zip, fetch_project_files
+from .exports.pdf import render_project_pdf
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

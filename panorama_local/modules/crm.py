@@ -1,4 +1,4 @@
-"""CRM sencillo con persistencia SQLite y hash            created_at TEXT, contraseñas.
+"""CRM sencillo con persistencia SQLite y hash            created_at TEXT,      created_at TEXT, contraseñas.
 
 Proporciona una clase CRM que usa una base de datos SQLite local para:
 - registrar usuarios (con contraseñas hasheadas con bcrypt),
@@ -45,11 +45,7 @@ def _ensure_db(db_path: Optional[str] = None):
             project_json TEXT NOT NULL,
             name TEXT,
             notes TEXT,
-<<<<<<< HEAD
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-=======
             created_at TEXT,
->>>>>>> 687b1ad (Add project metadata (name, notes, created_at), UI prompts and tests)
             FOREIGN KEY(username) REFERENCES users(username)
         )
         """
