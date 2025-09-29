@@ -52,11 +52,12 @@ elif option == "Simulación y CRM":
                         st.error("El usuario ya existe")
         else:
             user = crm.global_crm.current_user()
-            st.write(f"Usuario: **{user.username}**")
-            st.write(f"Plan: **{user.plan}**")
-            if user.plan == "Free":
+            # user is a dict {'username':..., 'plan':...}
+            st.write(f"Usuario: **{user.get('username')}**")
+            st.write(f"Plan: **{user.get('plan')}**")
+            if user.get('plan') == "Free":
                 if st.button("Actualizar a Pro"):
-                    crm.global_crm.set_plan(user.username, "Pro")
+                    crm.global_crm.set_plan(user.get('username'), "Pro")
                     st.experimental_rerun()
             if st.button("Cerrar sesión"):
                 crm.global_crm.logout()
@@ -91,8 +92,8 @@ elif option == "Simulación y CRM":
                     if crm.global_crm.is_authenticated():
                         if st.button("Guardar proyecto en mi cuenta"):
                             user = crm.global_crm.current_user()
-                            crm.global_crm.add_project(user.username, pmt_data)
-                            st.success("Proyecto guardado")
+                            proj_id = crm.global_crm.add_project(user.get('username'), pmt_data)
+                            st.success(f"Proyecto guardado (id={proj_id})")
                     else:
                         st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
             except Exception as e:
@@ -103,17 +104,28 @@ elif option == "Simulación y CRM":
         if crm.global_crm.is_authenticated():
             user = crm.global_crm.current_user()
             st.subheader("Proyectos guardados")
-            projects = crm.global_crm.list_projects(user.username)
+            projects = crm.global_crm.list_projects(user.get('username'))
             if not projects:
                 st.write("No hay proyectos guardados.")
             else:
-                for i, pr in enumerate(projects):
-                    st.write(f"Proyecto {i+1}")
-                    st.json(pr)
+                for pr in projects:
+                    pid = pr.get('id')
+                    st.write(f"Proyecto id={pid}")
+                    st.json(pr.get('project'))
                     try:
                         import json as _json
-                        payload = _json.dumps(pr, ensure_ascii=False, indent=2)
-                        filename = f"project_{i+1}.json"
+                        payload = _json.dumps(pr.get('project'), ensure_ascii=False, indent=2)
+                        filename = f"project_{pid}.json"
                         st.download_button(label="Exportar proyecto (JSON)", data=payload, file_name=filename, mime="application/json")
                     except Exception as _e:
                         st.warning(f"No se pudo preparar export: {_e}")
+                    # Delete with confirmation checkbox to avoid accidents
+                    confirm_key = f"confirm_delete_{pid}"
+                    if st.checkbox("Confirmar borrado", key=confirm_key):
+                        if st.button("Eliminar proyecto", key=f"del_btn_{pid}"):
+                            ok = crm.global_crm.delete_project(user.get('username'), pid)
+                            if ok:
+                                st.success(f"Proyecto {pid} eliminado")
+                                st.experimental_rerun()
+                            else:
+                                st.error("No se pudo eliminar el proyecto")
