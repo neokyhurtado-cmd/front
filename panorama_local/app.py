@@ -2,10 +2,22 @@ import streamlit as st
 import json
 import os
 import logging
-from panorama_local.modules import simulation, crm
-from panorama_local.capacity.core import compute_capacity, get_capacity_recommendations
-from panorama_local.exports.zip import export_projects_zip, fetch_project_files
-from panorama_local.exports.pdf import render_project_pdf
+import sys
+sys.path.append(os.path.dirname(__file__))  # añade panorama_local/ al PYTHONPATH dinámicamente
+
+# --- imports robustos para local y Streamlit Cloud ---
+try:
+    # cuando el paquete top-level está disponible (ejecución desde repo root)
+    from panorama_local.modules import simulation, crm
+    from panorama_local.capacity.core import compute_capacity, get_capacity_recommendations
+    from panorama_local.exports.zip import export_projects_zip, fetch_project_files
+    from panorama_local.exports.pdf import render_project_pdf
+except ImportError:
+    # fallback cuando el script se ejecuta dentro de panorama_local/
+    from modules import simulation, crm
+    from capacity.core import compute_capacity, get_capacity_recommendations
+    from exports.zip import export_projects_zip, fetch_project_files
+    from exports.pdf import render_project_pdf
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
