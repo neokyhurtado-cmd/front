@@ -32,3 +32,13 @@ __pycache__/
 *.db
 .venv/
 .env
+
+# Ignore local panorama CRM DB
+panorama_local/data/
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+
+# Virtual environments
+venv/
+env/

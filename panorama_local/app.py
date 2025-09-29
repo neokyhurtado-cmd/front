@@ -35,7 +35,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-option = st.sidebar.title("Panorama Ingeniería - PMT")
+
+st.sidebar.title("Panorama Ingeniería - PMT")
 option = st.sidebar.selectbox("Selecciona una herramienta", ["Análisis de capacidad", "Análisis de tráfico", "PMT Builder", "Simulación y CRM"])
 
 if option == "Análisis de capacidad":
@@ -155,11 +156,12 @@ elif option == "Simulación y CRM":
                         st.error("El usuario ya existe")
         else:
             user = crm_instance.current_user()
-            st.write(f"Usuario: **{user['username']}**")
-            st.write(f"Plan: **{user['plan']}**")
-            if user['plan'] == "Free":
+            # user is a dict {'username':..., 'plan':...}
+            st.write(f"Usuario: **{user.get('username')}**")
+            st.write(f"Plan: **{user.get('plan')}**")
+            if user.get('plan') == "Free":
                 if st.button("Actualizar a Pro"):
-                    crm_instance.set_plan(user['username'], "Pro")
+                    crm_instance.set_plan(user.get('username'), "Pro")
                     st.experimental_rerun()
             if st.button("Cerrar sesión"):
                 crm_instance.logout()
@@ -215,7 +217,7 @@ elif option == "Simulación y CRM":
                         proj_notes = st.text_area("Notas (opcional)", key="proj_notes")
                         if st.button("Guardar proyecto"):
                             user = crm_instance.current_user()
-                            project_id = crm_instance.add_project(user['username'], pmt_data, proj_name, proj_notes)
+                            project_id = crm_instance.add_project(user.get('username'), pmt_data, proj_name, proj_notes)
                             if project_id > 0:
                                 st.success("Proyecto guardado")
                             else:
@@ -226,7 +228,7 @@ elif option == "Simulación y CRM":
         if crm_instance.is_authenticated():
             user = crm_instance.current_user()
             st.subheader("Proyectos guardados")
-            projects = crm_instance.list_projects(user['username'])
+            projects = crm_instance.list_projects(user.get('username'))
 
             # Multi-project export section
             if projects:
@@ -322,11 +324,13 @@ elif option == "Simulación y CRM":
                             except Exception as _e:
                                 st.warning(f"No se pudo preparar export: {_e}")
                         with col_c:
-                            if st.button(f"Eliminar", key=f"delete_{pr['id']}"):
-                                if st.confirm(f"¿Eliminar proyecto '{pr.get('name', f'ID {pr['id']}')}'?"):
-                                    deleted = crm_instance.delete_project(user['username'], pr["id"])
-                                    if deleted:
-                                        st.success("Proyecto eliminado")
+                            # Delete with confirmation checkbox to avoid accidents
+                            confirm_key = f"confirm_delete_{pr['id']}"
+                            if st.checkbox("Confirmar borrado", key=confirm_key):
+                                if st.button("Eliminar proyecto", key=f"del_btn_{pr['id']}"):
+                                    ok = crm_instance.delete_project(user.get('username'), pr["id"])
+                                    if ok:
+                                        st.success(f"Proyecto {pr['id']} eliminado")
                                         st.experimental_rerun()
                                     else:
-                                        st.error("Error eliminando proyecto")
+                                        st.error("No se pudo eliminar el proyecto")
