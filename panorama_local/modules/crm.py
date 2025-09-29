@@ -54,15 +54,20 @@ def _ensure_db(db_path: Optional[str] = None):
         )
         """
     )
-    # Lightweight migration: add columns if missing
-    c.execute("PRAGMA table_info(projects)")
-    columns = [row[1] for row in c.fetchall()]
-    if "name" not in columns:
-        c.execute("ALTER TABLE projects ADD COLUMN name TEXT")
-    if "notes" not in columns:
-        c.execute("ALTER TABLE projects ADD COLUMN notes TEXT")
-    if "created_at" not in columns:
-        c.execute("ALTER TABLE projects ADD COLUMN created_at TEXT")
+    # Lightweight migration: ensure columns exist (for older DBs)
+    try:
+        c.execute("PRAGMA table_info(projects)")
+        cols = [row[1] for row in c.fetchall()]
+        # add missing columns if needed
+        if 'name' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN name TEXT")
+        if 'notes' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN notes TEXT")
+        if 'created_at' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN created_at TEXT")
+    except Exception:
+        # if PRAGMA fails (table might not exist yet) ignore and proceed
+        pass
     conn.commit()
     conn.close()
 
