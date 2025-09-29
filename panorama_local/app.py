@@ -2,13 +2,89 @@ import streamlit as st
 import json
 import os
 from modules import simulation, crm
+from capacity.core import compute_capacity, get_capacity_recommendations
+from exports.zip import export_projects_zip, fetch_project_files
+from exports.pdf import render_project_pdf
 
 st.set_page_config(page_title="Panorama Local", layout="wide")
 
 st.sidebar.title("Panorama Local")
-option = st.sidebar.selectbox("Selecciona una herramienta", ["Análisis de tráfico", "PMT Builder", "Simulación y CRM"])
+option = st.sidebar.selectbox("Selecciona una herramienta", ["Análisis de capacidad", "Análisis de tráfico", "PMT Builder", "Simulación y CRM"])
 
-if option == "Análisis de tráfico":
+if option == "Análisis de capacidad":
+    st.header("Análisis de Capacidad de Tráfico")
+    st.markdown("""
+    **Herramienta de análisis de capacidad basada en HCM (Highway Capacity Manual)**
+
+    Calcula métricas clave como ratio de saturación (x), demora (d) y nivel de servicio (LOS).
+    """)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.subheader("Parámetros de Flujo")
+        v = st.number_input("Flujo v (veh/h)", 0, 5000, 1200, 50,
+                          help="Tasa de flujo vehicular por hora")
+        c = st.number_input("Capacidad c (veh/h)", 1, 5000, 1800, 50,
+                          help="Capacidad del tramo/cruce")
+
+    with col2:
+        st.subheader("Parámetros de Saturación")
+        s = st.number_input("Flujo de saturación s (veh/h/carril)", 100, 3000, 1900, 50,
+                          help="Flujo de saturación por carril")
+
+    with col3:
+        st.subheader("Control Semafórico (opcional)")
+        use_signal = st.checkbox("Intersección semaforizada")
+        if use_signal:
+            g = st.number_input("Verde efectivo g (s)", 1, 300, 30, 5,
+                              help="Tiempo de verde efectivo por ciclo")
+            C = st.number_input("Ciclo total C (s)", 30, 300, 120, 10,
+                              help="Longitud total del ciclo semafórico")
+        else:
+            g = None
+            C = None
+
+    # Compute results
+    if st.button("Calcular Capacidad", type="primary"):
+        results = compute_capacity(v=v, c=c, s=s, g=g, C=C)
+        recommendations = get_capacity_recommendations(results)
+
+        st.success("Análisis completado")
+
+        # Display results
+        col_res1, col_res2, col_res3 = st.columns(3)
+
+        with col_res1:
+            st.metric("Ratio de Saturación (x)", f"{results['x']:.2f}",
+                     help="x = v/c. < 0.85: bueno, > 1.0: sobresaturado")
+            st.metric("Demora (d)", f"{results['d']:.1f} s/veh",
+                     help="Demora promedio por vehículo")
+
+        with col_res2:
+            st.metric("Nivel de Servicio", results['los'],
+                     help="A: excelente, F: deficiente")
+
+        with col_res3:
+            flags = results['flags']
+            if "critical" in flags:
+                st.error("🚨 Estado crítico")
+            elif "warning" in flags:
+                st.warning("⚠️ Cercano a capacidad")
+            else:
+                st.success("✅ Estado normal")
+
+        # Recommendations
+        if recommendations:
+            st.subheader("Recomendaciones")
+            for rec in recommendations:
+                st.write(rec)
+
+        # Detailed results
+        with st.expander("Resultados detallados"):
+            st.json(results)
+
+elif option == "Análisis de tráfico":
     st.header("Análisis de tráfico")
     st.info("Herramienta en construcción.")
 
@@ -124,6 +200,55 @@ elif option == "Simulación y CRM":
             user = crm.global_crm.current_user()
             st.subheader("Proyectos guardados")
             projects = crm.global_crm.list_projects(user.username)
+
+            # Multi-project export section
+            if projects:
+                st.subheader("Exportación masiva")
+                col_zip, col_pdf = st.columns(2)
+
+                with col_zip:
+                    selected_projects = st.multiselect(
+                        "Seleccionar proyectos para ZIP",
+                        options=[f"{p['id']}: {p.get('name', 'Sin nombre')}" for p in projects],
+                        help="Selecciona múltiples proyectos para exportar en un archivo ZIP"
+                    )
+                    if st.button("Descargar ZIP seleccionado") and selected_projects:
+                        # Extract project IDs
+                        project_ids = [s.split(':')[0] for s in selected_projects]
+                        zip_data = export_projects_zip(project_ids, fetch_project_files)
+                        st.download_button(
+                            label="📦 Descargar ZIP",
+                            data=zip_data,
+                            file_name=f"proyectos_pmt_{len(project_ids)}_items.zip",
+                            mime="application/zip"
+                        )
+
+                with col_pdf:
+                    pdf_project = st.selectbox(
+                        "Seleccionar proyecto para PDF",
+                        options=[""] + [f"{p['id']}: {p.get('name', 'Sin nombre')}" for p in projects],
+                        help="Selecciona un proyecto para generar reporte PDF"
+                    )
+                    if pdf_project and st.button("Generar PDF"):
+                        project_id = pdf_project.split(':')[0]
+                        # Find project data
+                        selected_proj = next((p for p in projects if str(p['id']) == project_id), None)
+                        if selected_proj:
+                            # Create summary for PDF
+                            summary = {
+                                "name": selected_proj.get("name", f"Proyecto {project_id}"),
+                                "notes": selected_proj.get("notes", ""),
+                                "created_at": selected_proj.get("created_at", ""),
+                                "capacity": {"v": 1200, "c": 1800, "x": 0.67, "d": 5.2, "los": "C"}
+                            }
+                            pdf_data = render_project_pdf(project_id, summary)
+                            st.download_button(
+                                label="📄 Descargar PDF",
+                                data=pdf_data,
+                                file_name=f"reporte_pmt_{project_id}.pdf",
+                                mime="application/pdf"
+                            )
+
             if not projects:
                 st.write("No hay proyectos guardados.")
             else:
