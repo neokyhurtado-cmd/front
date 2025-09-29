@@ -19,13 +19,12 @@ import logging
 
 # Importar módulos del proyecto
 try:
-    from reports.templates.pmt.base import render_pmt_base_template
+    from reports.templates.pmt.base import render_pmt_base_template, create_pmt_package
 except ImportError:
     # Fallback para desarrollo
     import sys
     sys.path.append('.')
-    # Placeholder para template
-    def render_pmt_base_template(data): return "# PMT Base Template\n\nDatos: {data}"
+    from panorama_local.reports.templates.pmt.base import render_pmt_base_template, create_pmt_package
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,55 @@ class PMTGenerator:
         Returns:
             Bytes del archivo ZIP
         """
+        # Preparar datos para la función create_pmt_package
+        package_data = {
+            'proyecto': project_info,
+            'resumen': normalized_data['summary'],
+            'phf': normalized_data['phf'],
+            'hmd': normalized_data['hmd'],
+            'fecha_generacion': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'data_normalized': normalized_data['data_normalized'],
+            'metadata': {
+                'generacion': {
+                    'timestamp': datetime.now().isoformat(),
+                    'generator_version': '1.0.0',
+                    'panorama_version': 'v0.3.1'
+                },
+                'proyecto': project_info,
+                'normalizacion': normalized_data['metadata'],
+                'verificacion': {
+                    'quality_score': verification_results['quality_score'],
+                    'can_generate_pmt': verification_results['can_generate_pmt'],
+                    'findings_count': {
+                        'critical': len(verification_results['findings']['critical']),
+                        'warning': len(verification_results['findings']['warning']),
+                        'info': len(verification_results['findings']['info'])
+                    }
+                }
+            }
+        }
+
+        # Usar la función create_pmt_package del módulo base
+        import tempfile
+        import os
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            zip_path = create_pmt_package(package_data, temp_dir)
+
+            if zip_path:
+                # Leer el archivo ZIP generado
+                with open(zip_path, 'rb') as f:
+                    zip_data = f.read()
+                return zip_data
+            else:
+                # Fallback al método anterior si falla
+                self.logger.warning("create_pmt_package failed, using fallback method")
+                return self._generate_fallback_package(normalized_data, verification_results, project_info)
+
+    def _generate_fallback_package(self, normalized_data: Dict[str, Any],
+                                 verification_results: Dict[str, Any],
+                                 project_info: Dict[str, str]) -> bytes:
+        """Método fallback para generar paquete PMT"""
         zip_buffer = io.BytesIO()
 
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -161,11 +209,12 @@ def main():
     st.markdown("""
     **Generación de paquete PMT completo**
 
-    Esta herramienta crea un ZIP con todos los archivos necesarios para un PMT base:
+    Esta herramienta crea un ZIP con todos los archivos necesarios para un PMT completo:
     - `aforos_normalizados.csv` - Datos normalizados con equivalencias
     - `metadata.json` - Información completa del proceso
     - `resumen.json` - Métricas resumidas (PHF, HMD, etc.)
-    - `pmt_base.md` - Plantilla base para reportes
+    - `PMT_Reporte.md` - Reporte completo en Markdown
+    - `PMT_Reporte.pdf` - Reporte en formato PDF (opcional)
     """)
 
     # Verificar prerrequisitos
@@ -324,7 +373,8 @@ def display_zip_contents(zip_data: bytes):
         ("aforos_normalizados.csv", "Datos normalizados con equivalencias vehiculares"),
         ("metadata.json", "Información completa del proceso de normalización"),
         ("resumen.json", "Métricas resumidas (PHF, HMD, volúmenes)"),
-        ("pmt_base.md", "Plantilla base para reportes y documentación")
+        ("PMT_Reporte.md", "Reporte completo en formato Markdown"),
+        ("PMT_Reporte.pdf", "Reporte en formato PDF (si disponible)")
     ]
 
     for filename, description in files_info:
@@ -338,9 +388,10 @@ def display_zip_contents(zip_data: bytes):
     **💡 Próximos pasos:**
 
     1. **Extrae el ZIP** en tu directorio de trabajo
-    2. **Revisa los archivos** generados
-    3. **Usa `pmt_base.md`** como base para tu reporte final
-    4. **Integra con herramientas** de documentación (Word, PDF)
+    2. **Revisa los archivos** generados (`PMT_Reporte.md`, `PMT_Reporte.pdf`)
+    3. **Usa los reportes** como base para tu documentación final
+    4. **Personaliza** según los requerimientos específicos del proyecto
+    5. **Integra con herramientas** de documentación profesional
     """)
 
 

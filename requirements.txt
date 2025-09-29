@@ -8,3 +8,4 @@ pytest-cov
 openpyxl
 jinja2
 requests
+docxtpl
