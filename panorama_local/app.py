@@ -1,14 +1,41 @@
 import streamlit as st
 import json
 import os
+import logging
 from modules import simulation, crm
 from capacity.core import compute_capacity, get_capacity_recommendations
 from exports.zip import export_projects_zip, fetch_project_files
 from exports.pdf import render_project_pdf
 
-st.set_page_config(page_title="Panorama Local", layout="wide")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-st.sidebar.title("Panorama Local")
+# Configure database URL from secrets/environment
+DB_URL = st.secrets.get("DATABASE_URL") or os.getenv("DATABASE_URL") or "sqlite:///./data/app.db"
+
+# Initialize CRM with proper database path
+if "crm_instance" not in st.session_state:
+    # Convert URL to file path for SQLite
+    if DB_URL.startswith("sqlite:///"):
+        db_path = DB_URL.replace("sqlite:///", "")
+        if not os.path.isabs(db_path):
+            db_path = os.path.join(os.path.dirname(__file__), db_path)
+    else:
+        db_path = os.path.join(os.path.dirname(__file__), "data", "panorama_crm.db")
+
+    st.session_state.crm_instance = crm.CRM(db_path=db_path)
+
+# Use session-based CRM instance
+crm_instance = st.session_state.crm_instance
+
+st.set_page_config(
+    page_title="Panorama Ingeniería - PMT",
+    page_icon="🚗",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+option = st.sidebar.title("Panorama Ingeniería - PMT")
 option = st.sidebar.selectbox("Selecciona una herramienta", ["Análisis de capacidad", "Análisis de tráfico", "PMT Builder", "Simulación y CRM"])
 
 if option == "Análisis de capacidad":
@@ -105,13 +132,13 @@ elif option == "Simulación y CRM":
         except Exception:
             db_path = 'n/a'
         st.caption(f"DB: {db_path}")
-        if not crm.global_crm.is_authenticated():
+        if not crm_instance.is_authenticated():
             tab1, tab2 = st.tabs(["Iniciar sesión", "Registrarse"])
             with tab1:
                 u = st.text_input("Usuario", key="login_user")
                 p = st.text_input("Contraseña", type="password", key="login_pass")
                 if st.button("Iniciar sesión"):
-                    ok = crm.global_crm.login(u, p)
+                    ok = crm_instance.login(u, p)
                     if ok:
                         st.success("Sesión iniciada")
                     else:
@@ -121,25 +148,25 @@ elif option == "Simulación y CRM":
                 rp = st.text_input("Contraseña (registro)", type="password", key="reg_pass")
                 rplan = st.selectbox("Plan", ["Free", "Pro"], key="reg_plan")
                 if st.button("Registrarse"):
-                    ok = crm.global_crm.register(ru, rp, rplan)
+                    ok = crm_instance.register(ru, rp, rplan)
                     if ok:
                         st.success("Usuario creado y autenticado")
                     else:
                         st.error("El usuario ya existe")
         else:
-            user = crm.global_crm.current_user()
-            st.write(f"Usuario: **{user.username}**")
-            st.write(f"Plan: **{user.plan}**")
-            if user.plan == "Free":
+            user = crm_instance.current_user()
+            st.write(f"Usuario: **{user['username']}**")
+            st.write(f"Plan: **{user['plan']}**")
+            if user['plan'] == "Free":
                 if st.button("Actualizar a Pro"):
-                    crm.global_crm.set_plan(user.username, "Pro")
+                    crm_instance.set_plan(user['username'], "Pro")
                     st.experimental_rerun()
             if st.button("Cerrar sesión"):
-                crm.global_crm.logout()
+                crm_instance.logout()
                 st.experimental_rerun()
 
         # Clear DB (solo para testing) - muestra bajo autenticación para evitar abusos
-        if crm.global_crm.is_authenticated():
+        if crm_instance.is_authenticated():
             if st.button("Clear DB (delete all)"):
                 if st.confirm("¿Borrar toda la base de datos? Esta acción es irreversible."):
                     try:
@@ -181,14 +208,14 @@ elif option == "Simulación y CRM":
                 res = simulation.run_simulation(pmt_data, engine=engine)
                 st.success("Simulación completada")
                 st.json(res)
-                if crm.global_crm.is_authenticated():
+                if crm_instance.is_authenticated():
                     st.subheader("Guardar proyecto")
                     with st.expander("Guardar en mi cuenta"):
                         proj_name = st.text_input("Nombre del proyecto", key="proj_name")
                         proj_notes = st.text_area("Notas (opcional)", key="proj_notes")
                         if st.button("Guardar proyecto"):
-                            user = crm.global_crm.current_user()
-                            project_id = crm.global_crm.add_project(user.username, pmt_data, proj_name, proj_notes)
+                            user = crm_instance.current_user()
+                            project_id = crm_instance.add_project(user['username'], pmt_data, proj_name, proj_notes)
                             if project_id > 0:
                                 st.success("Proyecto guardado")
                             else:
@@ -196,10 +223,10 @@ elif option == "Simulación y CRM":
                 else:
                     st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
 
-        if crm.global_crm.is_authenticated():
-            user = crm.global_crm.current_user()
+        if crm_instance.is_authenticated():
+            user = crm_instance.current_user()
             st.subheader("Proyectos guardados")
-            projects = crm.global_crm.list_projects(user.username)
+            projects = crm_instance.list_projects(user['username'])
 
             # Multi-project export section
             if projects:
@@ -213,15 +240,29 @@ elif option == "Simulación y CRM":
                         help="Selecciona múltiples proyectos para exportar en un archivo ZIP"
                     )
                     if st.button("Descargar ZIP seleccionado") and selected_projects:
-                        # Extract project IDs
-                        project_ids = [s.split(':')[0] for s in selected_projects]
-                        zip_data = export_projects_zip(project_ids, fetch_project_files)
-                        st.download_button(
-                            label="📦 Descargar ZIP",
-                            data=zip_data,
-                            file_name=f"proyectos_pmt_{len(project_ids)}_items.zip",
-                            mime="application/zip"
-                        )
+                        try:
+                            # Extract project IDs
+                            project_ids = [s.split(':')[0] for s in selected_projects]
+                            
+                            # Limit to prevent abuse
+                            MAX_PROJECTS = 10
+                            if len(project_ids) > MAX_PROJECTS:
+                                st.error(f"Máximo {MAX_PROJECTS} proyectos por ZIP")
+                                project_ids = project_ids[:MAX_PROJECTS]
+                            
+                            zip_data = export_projects_zip(project_ids, fetch_project_files)
+                            if len(zip_data) > 0:
+                                st.download_button(
+                                    label="📦 Descargar ZIP",
+                                    data=zip_data,
+                                    file_name=f"proyectos_pmt_{len(project_ids)}_items.zip",
+                                    mime="application/zip"
+                                )
+                            else:
+                                st.error("Error: ZIP vacío generado")
+                        except Exception as e:
+                            logger.error(f"Error generando ZIP: {e}")
+                            st.error(f"Error generando ZIP: {str(e)}")
 
                 with col_pdf:
                     pdf_project = st.selectbox(
@@ -230,24 +271,33 @@ elif option == "Simulación y CRM":
                         help="Selecciona un proyecto para generar reporte PDF"
                     )
                     if pdf_project and st.button("Generar PDF"):
-                        project_id = pdf_project.split(':')[0]
-                        # Find project data
-                        selected_proj = next((p for p in projects if str(p['id']) == project_id), None)
-                        if selected_proj:
-                            # Create summary for PDF
-                            summary = {
-                                "name": selected_proj.get("name", f"Proyecto {project_id}"),
-                                "notes": selected_proj.get("notes", ""),
-                                "created_at": selected_proj.get("created_at", ""),
-                                "capacity": {"v": 1200, "c": 1800, "x": 0.67, "d": 5.2, "los": "C"}
-                            }
-                            pdf_data = render_project_pdf(project_id, summary)
-                            st.download_button(
-                                label="📄 Descargar PDF",
-                                data=pdf_data,
-                                file_name=f"reporte_pmt_{project_id}.pdf",
-                                mime="application/pdf"
-                            )
+                        try:
+                            project_id = pdf_project.split(':')[0]
+                            # Find project data
+                            selected_proj = next((p for p in projects if str(p['id']) == project_id), None)
+                            if selected_proj:
+                                # Create summary for PDF
+                                summary = {
+                                    "name": selected_proj.get("name", f"Proyecto {project_id}"),
+                                    "notes": selected_proj.get("notes", ""),
+                                    "created_at": selected_proj.get("created_at", ""),
+                                    "capacity": {"v": 1200, "c": 1800, "x": 0.67, "d": 5.2, "los": "C"}
+                                }
+                                pdf_data = render_project_pdf(project_id, summary)
+                                if len(pdf_data) > 0:
+                                    st.download_button(
+                                        label="📄 Descargar PDF",
+                                        data=pdf_data,
+                                        file_name=f"reporte_pmt_{project_id}.pdf",
+                                        mime="application/pdf"
+                                    )
+                                else:
+                                    st.error("Error: PDF vacío generado")
+                            else:
+                                st.error("Proyecto no encontrado")
+                        except Exception as e:
+                            logger.error(f"Error generando PDF: {e}")
+                            st.error(f"Error generando PDF: {str(e)}")
 
             if not projects:
                 st.write("No hay proyectos guardados.")
@@ -274,7 +324,7 @@ elif option == "Simulación y CRM":
                         with col_c:
                             if st.button(f"Eliminar", key=f"delete_{pr['id']}"):
                                 if st.confirm(f"¿Eliminar proyecto '{pr.get('name', f'ID {pr['id']}')}'?"):
-                                    deleted = crm.global_crm.delete_project(user.username, pr["id"])
+                                    deleted = crm_instance.delete_project(user['username'], pr["id"])
                                     if deleted:
                                         st.success("Proyecto eliminado")
                                         st.experimental_rerun()
