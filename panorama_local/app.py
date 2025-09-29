@@ -20,8 +20,66 @@ except ImportError:
     from exports.pdf import render_project_pdf
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+import os
+log_dir = os.path.join(os.path.dirname(__file__), "logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "panorama_app.log")
+
+# Configure logging to both file and console
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file, encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
+
+def validate_pmt_data(pmt_data):
+    """
+    Valida la estructura de un archivo PMT JSON.
+
+    Args:
+        pmt_data (dict): Datos del proyecto PMT
+
+    Returns:
+        tuple: (is_valid: bool, error_message: str or None)
+    """
+    if not isinstance(pmt_data, dict):
+        return False, "El archivo debe contener un objeto JSON válido"
+
+    # Validar campos opcionales pero recomendados
+    errors = []
+
+    # Validar 'plan' si existe
+    if 'plan' in pmt_data:
+        if not isinstance(pmt_data['plan'], str):
+            errors.append("El campo 'plan' debe ser una cadena de texto")
+        elif pmt_data['plan'] not in ['Free', 'Pro']:
+            errors.append("El campo 'plan' debe ser 'Free' o 'Pro'")
+
+    # Validar 'markers' si existe
+    if 'markers' in pmt_data:
+        if not isinstance(pmt_data['markers'], list):
+            errors.append("El campo 'markers' debe ser una lista")
+        else:
+            # Validar que cada marker tenga estructura básica
+            for i, marker in enumerate(pmt_data['markers']):
+                if not isinstance(marker, dict):
+                    errors.append(f"El marker {i} debe ser un objeto")
+                    continue
+                # Markers pueden tener diferentes estructuras, no validamos campos específicos
+
+    # Validar que al menos tenga algún contenido útil
+    has_content = any(key in pmt_data for key in ['markers', 'plan', 'rotulo', 'center'])
+    if not has_content:
+        errors.append("El archivo PMT debe contener al menos uno de: markers, plan, rotulo, center")
+
+    if errors:
+        return False, "Errores de validación:\n" + "\n".join(f"• {error}" for error in errors)
+
+    return True, None
 
 # Configure database URL from secrets/environment
 DB_URL = st.secrets.get("DATABASE_URL") or os.getenv("DATABASE_URL") or "sqlite:///./data/app.db"
@@ -154,8 +212,10 @@ elif option == "Simulación y CRM":
                     ok = crm_instance.login(u, p)
                     if ok:
                         st.success("Sesión iniciada")
+                        logger.info(f"User login successful: {u}")
                     else:
                         st.error("Credenciales incorrectas o usuario no existe.")
+                        logger.warning(f"Failed login attempt: {u}")
             with tab2:
                 ru = st.text_input("Usuario (registro)", key="reg_user")
                 rp = st.text_input("Contraseña (registro)", type="password", key="reg_pass")
@@ -164,8 +224,10 @@ elif option == "Simulación y CRM":
                     ok = crm_instance.register(ru, rp, rplan)
                     if ok:
                         st.success("Usuario creado y autenticado")
+                        logger.info(f"New user registered: {ru} (plan: {rplan})")
                     else:
                         st.error("El usuario ya existe")
+                        logger.warning(f"Failed registration attempt: {ru} (user already exists)")
         else:
             user = crm_instance.current_user()
             # user is a dict {'username':..., 'plan':...}
@@ -176,7 +238,10 @@ elif option == "Simulación y CRM":
                     crm_instance.set_plan(user.get('username'), "Pro")
                     st.experimental_rerun()
             if st.button("Cerrar sesión"):
+                user = crm_instance.current_user()
+                username = user.get('username') if user else 'unknown'
                 crm_instance.logout()
+                logger.info(f"User logout: {username}")
                 st.experimental_rerun()
 
         # Clear DB (solo para testing) - muestra bajo autenticación para evitar abusos
@@ -207,10 +272,28 @@ elif option == "Simulación y CRM":
             if uploaded is not None:
                 try:
                     pmt_data = json.load(uploaded)
-                    st.json(pmt_data)
-                    selected_project = pmt_data
+
+                    # Validar la estructura del PMT
+                    is_valid, error_msg = validate_pmt_data(pmt_data)
+                    if not is_valid:
+                        st.error(f"Archivo PMT inválido:\n{error_msg}")
+                        st.info("**Formato esperado:** Objeto JSON con campos como 'markers' (lista), 'plan' ('Free'/'Pro'), 'rotulo', 'center'")
+                        selected_project = None
+                    else:
+                        st.success("✅ Archivo PMT válido")
+                        st.json(pmt_data)
+                        selected_project = pmt_data
+
+                        # Log successful import
+                        logger.info(f"PMT file imported successfully: {len(pmt_data)} keys, markers: {len(pmt_data.get('markers', []))}")
+
+                except json.JSONDecodeError as e:
+                    st.error(f"Error de formato JSON: {str(e)}")
+                    st.info("Asegúrate de que el archivo sea un JSON válido exportado desde PMT Builder")
+                    selected_project = None
                 except Exception as e:
-                    st.error(f"Error leyendo JSON: {e}")
+                    st.error(f"Error leyendo archivo: {str(e)}")
+                    selected_project = None
         else:
             # choose from saved projects
             if crm_instance.is_authenticated():
@@ -231,9 +314,14 @@ elif option == "Simulación y CRM":
             if selected_project is None:
                 st.error("Selecciona o carga un proyecto antes de ejecutar la simulación.")
             else:
-                res = simulation.run_simulation(selected_project, engine=engine)
-                st.success("Simulación completada")
-                st.json(res)
+                try:
+                    res = simulation.run_simulation(selected_project, engine=engine)
+                    st.success("Simulación completada")
+                    st.json(res)
+                    logger.info(f"Simulation run: engine={engine}, markers={len(selected_project.get('markers', []))}")
+                except Exception as e:
+                    st.error(f"Error en simulación: {str(e)}")
+                    logger.error(f"Simulation failed: engine={engine}, error={str(e)}")
                 # If the project came from an uploaded file, offer to save with metadata
                 if uploaded is not None and crm_instance.is_authenticated():
                     st.write("Guardar proyecto importado en la cuenta")
@@ -243,6 +331,7 @@ elif option == "Simulación y CRM":
                         user = crm_instance.current_user()
                         proj_id = crm_instance.add_project_with_meta(user.get('username'), selected_project, name=meta_name or None, notes=meta_notes or None)
                         st.success(f"Proyecto guardado (id={proj_id})")
+                        logger.info(f"Project saved: user={user.get('username')}, id={proj_id}, name='{meta_name}', markers={len(selected_project.get('markers', []))}")
                         st.success(f"Proyecto guardado (id={proj_id})")
                 elif uploaded is not None and not crm_instance.is_authenticated():
                     st.info("Inicia sesión para guardar el proyecto en tu cuenta.")
@@ -282,8 +371,10 @@ elif option == "Simulación y CRM":
                                     file_name=f"proyectos_pmt_{len(project_ids)}_items.zip",
                                     mime="application/zip"
                                 )
+                                logger.info(f"ZIP export: user={user.get('username')}, projects={len(project_ids)}")
                             else:
                                 st.error("Error: ZIP vacío generado")
+                                logger.error(f"ZIP export failed: user={user.get('username')}, projects={len(project_ids)}")
                         except Exception as e:
                             logger.error(f"Error generando ZIP: {e}")
                             st.error(f"Error generando ZIP: {str(e)}")
@@ -315,8 +406,10 @@ elif option == "Simulación y CRM":
                                         file_name=f"reporte_pmt_{project_id}.pdf",
                                         mime="application/pdf"
                                     )
+                                    logger.info(f"PDF export: user={user.get('username')}, project_id={project_id}")
                                 else:
                                     st.error("Error: PDF vacío generado")
+                                    logger.error(f"PDF export failed: user={user.get('username')}, project_id={project_id}")
                             else:
                                 st.error("Proyecto no encontrado")
                         except Exception as e:
@@ -346,6 +439,7 @@ elif option == "Simulación y CRM":
                         safe_name = (name or f"project_{pid}").replace(" ", "_")
                         filename = f"{safe_name}_{pid}.json"
                         st.download_button(label="Exportar proyecto (JSON)", data=payload, file_name=filename, mime="application/json")
+                        logger.info(f"JSON export: user={user.get('username')}, project_id={pid}, filename={filename}")
                     except Exception as _e:
                         st.warning(f"No se pudo preparar export: {_e}")
                     # Delete with confirmation checkbox to avoid accidents
@@ -355,6 +449,8 @@ elif option == "Simulación y CRM":
                             ok = crm_instance.delete_project(user.get('username'), pid)
                             if ok:
                                 st.success(f"Proyecto {pid} eliminado")
+                                logger.info(f"Project deleted: user={user.get('username')}, id={pid}")
                                 st.experimental_rerun()
                             else:
                                 st.error("No se pudo eliminar el proyecto")
+                                logger.error(f"Failed to delete project: user={user.get('username')}, id={pid}")
