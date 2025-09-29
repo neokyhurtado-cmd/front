@@ -118,11 +118,14 @@ elif option == "Simulación y CRM":
                 res = simulation.run_simulation(selected_project, engine=engine)
                 st.success("Simulación completada")
                 st.json(res)
-                # If the project came from an uploaded file, offer to save
+                # If the project came from an uploaded file, offer to save with metadata
                 if uploaded is not None and crm.global_crm.is_authenticated():
+                    st.write("Guardar proyecto importado en la cuenta")
+                    meta_name = st.text_input("Nombre del proyecto", value="", key="meta_name")
+                    meta_notes = st.text_area("Notas (opcionales)", value="", key="meta_notes")
                     if st.button("Guardar proyecto en mi cuenta", key="save_after_sim"):
                         user = crm.global_crm.current_user()
-                        proj_id = crm.global_crm.add_project(user.get('username'), selected_project)
+                        proj_id = crm.global_crm.add_project_with_meta(user.get('username'), selected_project, name=meta_name or None, notes=meta_notes or None)
                         st.success(f"Proyecto guardado (id={proj_id})")
                 elif uploaded is not None and not crm.global_crm.is_authenticated():
                     st.info("Inicia sesión para guardar el proyecto en tu cuenta.")
@@ -136,12 +139,23 @@ elif option == "Simulación y CRM":
             else:
                 for pr in projects:
                     pid = pr.get('id')
-                    st.write(f"Proyecto id={pid}")
+                    name = pr.get('name') or f"Proyecto {pid}"
+                    notes = pr.get('notes') or ""
+                    created_at = pr.get('created_at')
+                    st.write(f"{name} (id={pid})")
+                    if created_at:
+                        st.caption(f"Creado: {created_at}")
+                    if notes:
+                        st.markdown(f"> {notes}")
                     st.json(pr.get('project'))
                     try:
                         import json as _json
-                        payload = _json.dumps(pr.get('project'), ensure_ascii=False, indent=2)
-                        filename = f"project_{pid}.json"
+                        payload = _json.dumps({
+                            "meta": {"id": pid, "name": name, "notes": notes, "created_at": created_at},
+                            "project": pr.get('project'),
+                        }, ensure_ascii=False, indent=2)
+                        safe_name = (name or f"project_{pid}").replace(" ", "_")
+                        filename = f"{safe_name}_{pid}.json"
                         st.download_button(label="Exportar proyecto (JSON)", data=payload, file_name=filename, mime="application/json")
                     except Exception as _e:
                         st.warning(f"No se pudo preparar export: {_e}")
