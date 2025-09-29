@@ -12,6 +12,7 @@ migraciones. La base de datos se crea en `data/panorama_crm.db`.
 import sqlite3
 import os
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 import bcrypt
 
@@ -39,13 +40,15 @@ def _ensure_db(db_path: Optional[str] = None):
     c.execute("PRAGMA temp_store=MEMORY")  # Store temp tables in memory
     c.execute("PRAGMA foreign_keys=ON")  # Enable foreign key constraints
 
-    # users: username (primary), password_hash, plan
+    # users: id, username UNIQUE, password_hash, plan, created_at
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS users (
-            username TEXT PRIMARY KEY,
-            password_hash BLOB NOT NULL,
-            plan TEXT NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            plan TEXT DEFAULT 'free',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
         """
     )
@@ -90,6 +93,42 @@ def _ensure_db(db_path: Optional[str] = None):
         )
         """
     )
+    # roles: id, name
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS roles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL CHECK (name IN ('admin','verificador','analista'))
+        )
+        """
+    )
+    # user_roles: user_id, role_id (N:M relationship)
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_roles (
+            user_id INTEGER NOT NULL,
+            role_id INTEGER NOT NULL,
+            PRIMARY KEY (user_id, role_id),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE
+        )
+        """
+    )
+    # report_versions: id, project_id, version, kind, status, created_at, meta_json
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS report_versions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            version TEXT NOT NULL,
+            kind TEXT NOT NULL CHECK (kind IN ('PMT','Estudio')),
+            status TEXT NOT NULL CHECK (status IN ('en_revision','aprobado','observado','renovado')),
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            meta_json TEXT,
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+        )
+        """
+    )
     # Lightweight migration: ensure columns exist (for older DBs)
     try:
         c.execute("PRAGMA table_info(projects)")
@@ -115,14 +154,34 @@ def _ensure_db(db_path: Optional[str] = None):
     conn.close()
 
 
+def _init_default_roles(db_path: str = DB_PATH):
+    """Initialize default roles if they don't exist."""
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    default_roles = ['admin', 'verificador', 'analista']
+    for role in default_roles:
+        try:
+            c.execute("INSERT INTO roles (name) VALUES (?)", (role,))
+        except sqlite3.IntegrityError:
+            # Role already exists
+            pass
+    conn.commit()
+    conn.close()
+
+
 class CRM:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
         _ensure_db(self.db_path)
+        _init_default_roles(self.db_path)
         self._current_username: Optional[str] = None
 
     def _connect(self):
         return sqlite3.connect(self.db_path)
+
+    def _get_connection(self):
+        """Alias for _connect for consistency."""
+        return self._connect()
 
     def register(self, username: str, password: str, plan: str = "Free") -> bool:
         # check exists
@@ -298,33 +357,144 @@ class CRM:
     def find_user(self, username: str) -> Optional[Dict[str, Any]]:
         conn = self._connect()
         c = conn.cursor()
-        c.execute("SELECT username, password_hash, plan FROM users WHERE username = ?", (username,))
+        c.execute("SELECT id, username, password_hash, plan FROM users WHERE username = ?", (username,))
         row = c.fetchone()
         conn.close()
         if not row:
             return None
-        return {"username": row[0], "password_hash": row[1], "plan": row[2]}
+        return {"id": row[0], "username": row[1], "password_hash": row[2], "plan": row[3]}
 
-    def add_speed_comparison(self, username: str, origin: str, destination: str,
-                           distance_meters: Optional[int] = None,
-                           duration_seconds: Optional[int] = None,
-                           duration_traffic_seconds: Optional[int] = None) -> Optional[int]:
-        """Add a speed comparison result. Returns inserted id or None on failure."""
-        from datetime import datetime, timezone
+    def add_speed_comparison(self, username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds):
+        """Add a speed comparison record."""
+        with self._get_connection() as conn:
+            c = conn.cursor()
+            c.execute(
+                """
+                INSERT INTO speed_comparisons (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, datetime.now().isoformat())
+            )
+            conn.commit()
 
-        if not self.find_user(username):
-            return None
-        created_at = datetime.now(timezone.utc).isoformat()
+    def create_role(self, name):
+        """Create a new role if it doesn't exist."""
+        conn = self._connect()
+        c = conn.cursor()
+        try:
+            c.execute("INSERT INTO roles (name) VALUES (?)", (name,))
+            conn.commit()
+            result = c.lastrowid
+        except sqlite3.IntegrityError:
+            # Role already exists, return existing role id
+            c.execute("SELECT id FROM roles WHERE name = ?", (name,))
+            existing = c.fetchone()
+            result = existing[0] if existing else None
+        conn.close()
+        return result
+
+    def assign_role_to_user(self, username, role_name):
+        """Assign a role to a user."""
+        conn = self._connect()
+        c = conn.cursor()
+        # Get user id
+        c.execute("SELECT id FROM users WHERE username = ?", (username,))
+        user_row = c.fetchone()
+        if not user_row:
+            conn.close()
+            raise ValueError(f"User {username} not found")
+        user_id = user_row[0]
+        
+        # Get role id
+        c.execute("SELECT id FROM roles WHERE name = ?", (role_name,))
+        role_row = c.fetchone()
+        if not role_row:
+            conn.close()
+            raise ValueError(f"Role {role_name} not found")
+        role_id = role_row[0]
+        
+        # Assign role
+        try:
+            c.execute("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)", (user_id, role_id))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            # Role already assigned
+            pass
+        conn.close()
+
+    def get_user_roles(self, username):
+        """Get all roles for a user."""
         conn = self._connect()
         c = conn.cursor()
         c.execute(
-            "INSERT INTO speed_comparisons (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at),
+            """
+            SELECT r.name FROM roles r
+            JOIN user_roles ur ON r.id = ur.role_id
+            JOIN users u ON u.id = ur.user_id
+            WHERE u.username = ?
+            """,
+            (username,)
+        )
+        roles = [row[0] for row in c.fetchall()]
+        conn.close()
+        return roles
+
+    def has_role(self, username, role_name):
+        """Check if user has a specific role."""
+        roles = self.get_user_roles(username)
+        return role_name in roles
+
+    # Report versioning methods
+    def create_report_version(self, project_id, version, kind, status, meta_json=None):
+        """Create a new report version."""
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            """
+            INSERT INTO report_versions (project_id, version, kind, status, meta_json)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (project_id, version, kind, status, meta_json)
         )
         conn.commit()
-        last_id = c.lastrowid
+        result = c.lastrowid
         conn.close()
-        return last_id
+        return result
+
+    def get_report_versions(self, project_id):
+        """Get all report versions for a project."""
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "SELECT * FROM report_versions WHERE project_id = ? ORDER BY created_at DESC",
+            (project_id,)
+        )
+        versions = c.fetchall()
+        conn.close()
+        return versions
+
+    def update_report_version_status(self, version_id, status):
+        """Update the status of a report version."""
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "UPDATE report_versions SET status = ? WHERE id = ?",
+            (status, version_id)
+        )
+        conn.commit()
+        conn.close()
+
+    def get_latest_report_version(self, project_id, kind):
+        """Get the latest version of a specific kind for a project."""
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "SELECT * FROM report_versions WHERE project_id = ? AND kind = ? ORDER BY id DESC LIMIT 1",
+            (project_id, kind)
+        )
+        result = c.fetchone()
+        conn.close()
+        return result
 
     def list_speed_comparisons(self, username: str) -> List[dict]:
         """List speed comparisons for a user."""
