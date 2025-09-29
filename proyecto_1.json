@@ -1,0 +1,17 @@
+{
+  "markers": [
+    {
+      "id": 1,
+      "lat": 4.6097,
+      "lng": -74.0817,
+      "type": "intersection",
+      "name": "Centro Histórico Norte"
+    }
+  ],
+  "plan": "Free",
+  "rotulo": "Proyecto 1 - Centro Histórico",
+  "center": {
+    "lat": 4.6097,
+    "lng": -74.0817
+  }
+}

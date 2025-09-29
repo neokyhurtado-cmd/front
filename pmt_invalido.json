@@ -1,0 +1,7 @@
+{
+  "invalid_field": "this should not be here",
+  "markers": "this should be an array, not a string",
+  "plan": "InvalidPlan",
+  "rotulo": "Archivo Inválido para Testing",
+  "center": "this should be an object with lat/lng"
+}

@@ -1,0 +1,32 @@
+{
+  "markers": [
+    {
+      "id": 1,
+      "lat": 4.6200,
+      "lng": -74.0700,
+      "type": "intersection",
+      "name": "Zona Norte"
+    },
+    {
+      "id": 2,
+      "lat": 4.6210,
+      "lng": -74.0710,
+      "type": "intersection",
+      "name": "Avenida Norte"
+    }
+  ],
+  "plan": "Pro",
+  "rotulo": "Proyecto 2 - Zona Norte",
+  "center": {
+    "lat": 4.6205,
+    "lng": -74.0705
+  },
+  "lote": {
+    "bounds": {
+      "north": 4.6250,
+      "south": 4.6150,
+      "east": -74.0650,
+      "west": -74.0750
+    }
+  }
+}
