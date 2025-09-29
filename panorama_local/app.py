@@ -183,47 +183,53 @@ elif option == "Simulación y CRM":
 
     with col2:
         st.subheader("Simular proyecto PMT")
-        selected_project = st.session_state.get("selected_project")
-        if selected_project:
-            st.info("Proyecto seleccionado de guardados. Puedes simularlo directamente o cargar otro.")
-            pmt_data = selected_project
-            st.json(pmt_data)
-            if st.button("Limpiar selección"):
-                del st.session_state.selected_project
-                st.experimental_rerun()
-        else:
-            uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"]) 
+        st.write("---")
+        st.markdown("**Simular impacto de tráfico**")
+        # Option: select from uploaded file or from saved projects
+        sim_source = st.radio("Fuente del proyecto", ["Cargar archivo", "Usar proyecto guardado"], index=0)
+
+        selected_project = None
+        uploaded = None
+        if sim_source == "Cargar archivo":
+            uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"], key="sim_upload")
             if uploaded is not None:
                 try:
                     pmt_data = json.load(uploaded)
                     st.json(pmt_data)
+                    selected_project = pmt_data
                 except Exception as e:
                     st.error(f"Error leyendo JSON: {e}")
-                    pmt_data = None
+        else:
+            # choose from saved projects
+            if crm_instance.is_authenticated():
+                user = crm_instance.current_user()
+                projects = crm_instance.list_projects(user.get('username'))
+                choices = {str(p.get('id')): p.get('project') for p in projects} if projects else {}
+                if not choices:
+                    st.info("No hay proyectos guardados. Sube un archivo o guarda uno primero.")
+                else:
+                    sel = st.selectbox("Selecciona un proyecto guardado", options=list(choices.keys()))
+                    selected_project = choices.get(sel)
             else:
-                st.info("Sube aquí un JSON exportado desde PMT Builder para simularlo.")
-                pmt_data = None
-        
-        if pmt_data is not None:
-            engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"]) 
-            if st.button("Ejecutar simulación"):
-                res = simulation.run_simulation(pmt_data, engine=engine)
+                st.info("Inicia sesión para usar proyectos guardados.")
+
+        # Simulation engine and execution
+        engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"], key="sim_engine")
+        if st.button("Ejecutar simulación"):
+            if selected_project is None:
+                st.error("Selecciona o carga un proyecto antes de ejecutar la simulación.")
+            else:
+                res = simulation.run_simulation(selected_project, engine=engine)
                 st.success("Simulación completada")
                 st.json(res)
-                if crm_instance.is_authenticated():
-                    st.subheader("Guardar proyecto")
-                    with st.expander("Guardar en mi cuenta"):
-                        proj_name = st.text_input("Nombre del proyecto", key="proj_name")
-                        proj_notes = st.text_area("Notas (opcional)", key="proj_notes")
-                        if st.button("Guardar proyecto"):
-                            user = crm_instance.current_user()
-                            project_id = crm_instance.add_project(user.get('username'), pmt_data, proj_name, proj_notes)
-                            if project_id > 0:
-                                st.success("Proyecto guardado")
-                            else:
-                                st.error("Error guardando proyecto")
-                else:
-                    st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
+                # If the project came from an uploaded file, offer to save
+                if uploaded is not None and crm_instance.is_authenticated():
+                    if st.button("Guardar proyecto en mi cuenta", key="save_after_sim"):
+                        user = crm_instance.current_user()
+                        proj_id = crm_instance.add_project(user.get('username'), selected_project)
+                        st.success(f"Proyecto guardado (id={proj_id})")
+                elif uploaded is not None and not crm_instance.is_authenticated():
+                    st.info("Inicia sesión para guardar el proyecto en tu cuenta.")
 
         if crm_instance.is_authenticated():
             user = crm_instance.current_user()
