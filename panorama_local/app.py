@@ -79,27 +79,53 @@ elif option == "Simulación y CRM":
 
     with col2:
         st.subheader("Simular proyecto PMT")
-        uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"]) 
-        if uploaded is not None:
-            try:
-                pmt_data = json.load(uploaded)
-                st.json(pmt_data)
-                engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"]) 
-                if st.button("Ejecutar simulación"):
-                    res = simulation.run_simulation(pmt_data, engine=engine)
-                    st.success("Simulación completada")
-                    st.json(res)
-                    if crm.global_crm.is_authenticated():
-                        if st.button("Guardar proyecto en mi cuenta"):
-                            user = crm.global_crm.current_user()
-                            proj_id = crm.global_crm.add_project(user.get('username'), pmt_data)
-                            st.success(f"Proyecto guardado (id={proj_id})")
-                    else:
-                        st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
-            except Exception as e:
-                st.error(f"Error leyendo JSON: {e}")
+        st.write("---")
+        st.markdown("**Simular impacto de tráfico**")
+        # Option: select from uploaded file or from saved projects
+        sim_source = st.radio("Fuente del proyecto", ["Cargar archivo", "Usar proyecto guardado"], index=0)
+
+        selected_project = None
+        uploaded = None
+        if sim_source == "Cargar archivo":
+            uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"], key="sim_upload")
+            if uploaded is not None:
+                try:
+                    pmt_data = json.load(uploaded)
+                    st.json(pmt_data)
+                    selected_project = pmt_data
+                except Exception as e:
+                    st.error(f"Error leyendo JSON: {e}")
         else:
-            st.info("Sube aquí un JSON exportado desde PMT Builder para simularlo.")
+            # choose from saved projects
+            if crm.global_crm.is_authenticated():
+                user = crm.global_crm.current_user()
+                projects = crm.global_crm.list_projects(user.get('username'))
+                choices = {str(p.get('id')): p.get('project') for p in projects} if projects else {}
+                if not choices:
+                    st.info("No hay proyectos guardados. Sube un archivo o guarda uno primero.")
+                else:
+                    sel = st.selectbox("Selecciona un proyecto guardado", options=list(choices.keys()))
+                    selected_project = choices.get(sel)
+            else:
+                st.info("Inicia sesión para usar proyectos guardados.")
+
+        # Simulation engine and execution
+        engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"], key="sim_engine")
+        if st.button("Ejecutar simulación"):
+            if selected_project is None:
+                st.error("Selecciona o carga un proyecto antes de ejecutar la simulación.")
+            else:
+                res = simulation.run_simulation(selected_project, engine=engine)
+                st.success("Simulación completada")
+                st.json(res)
+                # If the project came from an uploaded file, offer to save
+                if uploaded is not None and crm.global_crm.is_authenticated():
+                    if st.button("Guardar proyecto en mi cuenta", key="save_after_sim"):
+                        user = crm.global_crm.current_user()
+                        proj_id = crm.global_crm.add_project(user.get('username'), selected_project)
+                        st.success(f"Proyecto guardado (id={proj_id})")
+                elif uploaded is not None and not crm.global_crm.is_authenticated():
+                    st.info("Inicia sesión para guardar el proyecto en tu cuenta.")
 
         if crm.global_crm.is_authenticated():
             user = crm.global_crm.current_user()
