@@ -1,0 +1,31 @@
+{
+  "markers": [
+    {
+      "id": 1,
+      "lat": 4.5900,
+      "lng": -74.0900,
+      "type": "intersection",
+      "name": "Zona Sur"
+    },
+    {
+      "id": 2,
+      "lat": 4.5910,
+      "lng": -74.0910,
+      "type": "intersection",
+      "name": "Calle Sur 1"
+    },
+    {
+      "id": 3,
+      "lat": 4.5920,
+      "lng": -74.0920,
+      "type": "intersection",
+      "name": "Calle Sur 2"
+    }
+  ],
+  "plan": "Free",
+  "rotulo": "Proyecto 3 - Zona Sur",
+  "center": {
+    "lat": 4.5910,
+    "lng": -74.0910
+  }
+}

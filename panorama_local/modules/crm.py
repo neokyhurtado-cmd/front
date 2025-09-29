@@ -24,8 +24,21 @@ def _ensure_db(db_path: Optional[str] = None):
     path = db_path or DB_PATH
     dirpath = os.path.dirname(path)
     os.makedirs(dirpath, exist_ok=True)
+
+    # Also ensure logs directory exists
+    logs_dir = os.path.join(os.path.dirname(__file__), "..", "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+
     conn = sqlite3.connect(path)
     c = conn.cursor()
+
+    # SQLite optimizations for better performance and concurrency
+    c.execute("PRAGMA journal_mode=WAL")  # Write-Ahead Logging for better concurrency
+    c.execute("PRAGMA synchronous=NORMAL")  # Balance between performance and safety
+    c.execute("PRAGMA cache_size=1000")  # Increase cache size
+    c.execute("PRAGMA temp_store=MEMORY")  # Store temp tables in memory
+    c.execute("PRAGMA foreign_keys=ON")  # Enable foreign key constraints
+
     # users: username (primary), password_hash, plan
     c.execute(
         """
@@ -33,6 +46,17 @@ def _ensure_db(db_path: Optional[str] = None):
             username TEXT PRIMARY KEY,
             password_hash BLOB NOT NULL,
             plan TEXT NOT NULL
+        )
+        """
+    )
+    # login_attempts: username, attempt_time, success (for rate limiting and lockout)
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            attempt_time TEXT NOT NULL,
+            success INTEGER NOT NULL
         )
         """
     )
@@ -64,6 +88,13 @@ def _ensure_db(db_path: Optional[str] = None):
     except Exception:
         # if PRAGMA fails (table might not exist yet) ignore and proceed
         pass
+
+    # Create indexes for better performance
+    c.execute("CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_projects_name ON projects(name)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_projects_username ON projects(username)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_login_attempts_username_time ON login_attempts(username, attempt_time)")
+
     conn.commit()
     conn.close()
 
@@ -81,7 +112,8 @@ class CRM:
         # check exists
         if self.find_user(username):
             return False
-        pw_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        # Use higher bcrypt rounds for better security (≥12)
+        pw_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12))
         conn = self._connect()
         c = conn.cursor()
         c.execute("INSERT INTO users (username, password_hash, plan) VALUES (?, ?, ?)", (username, pw_hash, plan))
@@ -91,20 +123,66 @@ class CRM:
         return True
 
     def login(self, username: str, password: str) -> bool:
+        from datetime import datetime, timedelta, timezone
+
+        # Check for lockout: 5 failed attempts in last 15 minutes
+        conn = self._connect()
+        c = conn.cursor()
+        fifteen_min_ago = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
+        c.execute(
+            "SELECT COUNT(*) FROM login_attempts WHERE username = ? AND attempt_time > ? AND success = 0",
+            (username, fifteen_min_ago)
+        )
+        failed_attempts = c.fetchone()[0]
+        if failed_attempts >= 5:
+            conn.close()
+            return False  # Account locked
+
+        # Record login attempt
+        attempt_time = datetime.now(timezone.utc).isoformat()
         u = self.find_user(username)
         if not u:
+            # User doesn't exist - record failed attempt
+            c.execute("INSERT INTO login_attempts (username, attempt_time, success) VALUES (?, ?, 0)",
+                     (username, attempt_time))
+            conn.commit()
+            conn.close()
             return False
+
         stored = u.get("password_hash")
         if not stored:
+            # Invalid password hash - record failed attempt
+            c.execute("INSERT INTO login_attempts (username, attempt_time, success) VALUES (?, ?, 0)",
+                     (username, attempt_time))
+            conn.commit()
+            conn.close()
             return False
+
         try:
             ok = bcrypt.checkpw(password.encode("utf-8"), stored)
         except Exception:
+            # Password check failed - record failed attempt
+            c.execute("INSERT INTO login_attempts (username, attempt_time, success) VALUES (?, ?, 0)",
+                     (username, attempt_time))
+            conn.commit()
+            conn.close()
             return False
+
         if ok:
+            # Successful login
+            c.execute("INSERT INTO login_attempts (username, attempt_time, success) VALUES (?, ?, 1)",
+                     (username, attempt_time))
+            conn.commit()
+            conn.close()
             self._current_username = username
             return True
-        return False
+        else:
+            # Failed login
+            c.execute("INSERT INTO login_attempts (username, attempt_time, success) VALUES (?, ?, 0)",
+                     (username, attempt_time))
+            conn.commit()
+            conn.close()
+            return False
 
     def logout(self):
         self._current_username = None
@@ -136,9 +214,9 @@ class CRM:
         # legacy simple insert: but we now support metadata
         created_at = None
         try:
-            from datetime import datetime
+            from datetime import datetime, timezone
 
-            created_at = datetime.utcnow().isoformat()
+            created_at = datetime.now(timezone.utc).isoformat()
         except Exception:
             created_at = None
         c.execute(
@@ -185,11 +263,11 @@ class CRM:
     def add_project_with_meta(self, username: str, project: dict, name: Optional[str] = None, notes: Optional[str] = None) -> Optional[int]:
         """Add a project with metadata. Returns inserted id or None on failure."""
         import json
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         if not self.find_user(username):
             return None
-        created_at = datetime.utcnow().isoformat()
+        created_at = datetime.now(timezone.utc).isoformat()
         conn = self._connect()
         c = conn.cursor()
         c.execute(
