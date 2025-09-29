@@ -36,17 +36,29 @@ def _ensure_db(db_path: Optional[str] = None):
         )
         """
     )
-    # projects: id, username FK, project_json
+    # projects: id, username FK, project_json, name, notes, created_at
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             project_json TEXT NOT NULL,
+            name TEXT,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(username) REFERENCES users(username)
         )
         """
     )
+    # Lightweight migration: add columns if missing
+    c.execute("PRAGMA table_info(projects)")
+    columns = [row[1] for row in c.fetchall()]
+    if "name" not in columns:
+        c.execute("ALTER TABLE projects ADD COLUMN name TEXT")
+    if "notes" not in columns:
+        c.execute("ALTER TABLE projects ADD COLUMN notes TEXT")
+    if "created_at" not in columns:
+        c.execute("ALTER TABLE projects ADD COLUMN created_at TEXT")
     conn.commit()
     conn.close()
 
@@ -109,17 +121,18 @@ class CRM:
         conn.close()
         return changed
 
-    def add_project(self, username: str, project: dict) -> bool:
+    def add_project(self, username: str, project: dict, name: Optional[str] = None, notes: Optional[str] = None) -> int:
         import json
 
         if not self.find_user(username):
-            return False
+            return -1
         conn = self._connect()
         c = conn.cursor()
-        c.execute("INSERT INTO projects (username, project_json) VALUES (?, ?)", (username, json.dumps(project)))
+        c.execute("INSERT INTO projects (username, project_json, name, notes) VALUES (?, ?, ?, ?)", (username, json.dumps(project), name, notes))
+        project_id = c.lastrowid
         conn.commit()
         conn.close()
-        return True
+        return project_id
 
     def list_projects(self, username: str) -> List[dict]:
         import json
@@ -128,10 +141,21 @@ class CRM:
             return []
         conn = self._connect()
         c = conn.cursor()
-        c.execute("SELECT project_json FROM projects WHERE username = ? ORDER BY id", (username,))
+        c.execute("SELECT id, project_json, name, notes, created_at FROM projects WHERE username = ? ORDER BY id", (username,))
         rows = c.fetchall()
         conn.close()
-        return [json.loads(r[0]) for r in rows]
+        return [{"id": r[0], "project": json.loads(r[1]), "name": r[2], "notes": r[3], "created_at": r[4]} for r in rows]
+
+    def delete_project(self, username: str, project_id: int) -> bool:
+        if not self.find_user(username):
+            return False
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute("DELETE FROM projects WHERE username = ? AND id = ?", (username, project_id))
+        conn.commit()
+        deleted = c.rowcount > 0
+        conn.close()
+        return deleted
 
     def find_user(self, username: str) -> Optional[Dict[str, Any]]:
         conn = self._connect()
@@ -142,7 +166,3 @@ class CRM:
         if not row:
             return None
         return {"username": row[0], "password_hash": row[1], "plan": row[2]}
-
-
-# Instancia global para acceder desde la app
-global_crm = CRM()

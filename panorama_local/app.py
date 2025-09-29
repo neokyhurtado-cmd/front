@@ -78,27 +78,47 @@ elif option == "Simulación y CRM":
 
     with col2:
         st.subheader("Simular proyecto PMT")
-        uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"]) 
-        if uploaded is not None:
-            try:
-                pmt_data = json.load(uploaded)
-                st.json(pmt_data)
-                engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"]) 
-                if st.button("Ejecutar simulación"):
-                    res = simulation.run_simulation(pmt_data, engine=engine)
-                    st.success("Simulación completada")
-                    st.json(res)
-                    if crm.global_crm.is_authenticated():
-                        if st.button("Guardar proyecto en mi cuenta"):
-                            user = crm.global_crm.current_user()
-                            crm.global_crm.add_project(user.username, pmt_data)
-                            st.success("Proyecto guardado")
-                    else:
-                        st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
-            except Exception as e:
-                st.error(f"Error leyendo JSON: {e}")
+        selected_project = st.session_state.get("selected_project")
+        if selected_project:
+            st.info("Proyecto seleccionado de guardados. Puedes simularlo directamente o cargar otro.")
+            pmt_data = selected_project
+            st.json(pmt_data)
+            if st.button("Limpiar selección"):
+                del st.session_state.selected_project
+                st.experimental_rerun()
         else:
-            st.info("Sube aquí un JSON exportado desde PMT Builder para simularlo.")
+            uploaded = st.file_uploader("Carga un JSON exportado desde PMT Builder", type=["json"]) 
+            if uploaded is not None:
+                try:
+                    pmt_data = json.load(uploaded)
+                    st.json(pmt_data)
+                except Exception as e:
+                    st.error(f"Error leyendo JSON: {e}")
+                    pmt_data = None
+            else:
+                st.info("Sube aquí un JSON exportado desde PMT Builder para simularlo.")
+                pmt_data = None
+        
+        if pmt_data is not None:
+            engine = st.selectbox("Motor de simulación", ["cityflow", "uxsim"]) 
+            if st.button("Ejecutar simulación"):
+                res = simulation.run_simulation(pmt_data, engine=engine)
+                st.success("Simulación completada")
+                st.json(res)
+                if crm.global_crm.is_authenticated():
+                    st.subheader("Guardar proyecto")
+                    with st.expander("Guardar en mi cuenta"):
+                        proj_name = st.text_input("Nombre del proyecto", key="proj_name")
+                        proj_notes = st.text_area("Notas (opcional)", key="proj_notes")
+                        if st.button("Guardar proyecto"):
+                            user = crm.global_crm.current_user()
+                            project_id = crm.global_crm.add_project(user.username, pmt_data, proj_name, proj_notes)
+                            if project_id > 0:
+                                st.success("Proyecto guardado")
+                            else:
+                                st.error("Error guardando proyecto")
+                else:
+                    st.info("Inicia sesión para poder guardar proyectos en tu cuenta.")
 
         if crm.global_crm.is_authenticated():
             user = crm.global_crm.current_user()
@@ -107,13 +127,31 @@ elif option == "Simulación y CRM":
             if not projects:
                 st.write("No hay proyectos guardados.")
             else:
-                for i, pr in enumerate(projects):
-                    st.write(f"Proyecto {i+1}")
-                    st.json(pr)
-                    try:
-                        import json as _json
-                        payload = _json.dumps(pr, ensure_ascii=False, indent=2)
-                        filename = f"project_{i+1}.json"
-                        st.download_button(label="Exportar proyecto (JSON)", data=payload, file_name=filename, mime="application/json")
-                    except Exception as _e:
-                        st.warning(f"No se pudo preparar export: {_e}")
+                for pr in projects:
+                    with st.expander(f"Proyecto: {pr.get('name', f'ID {pr['id']}')}"):
+                        st.write(f"**Nombre:** {pr.get('name', 'Sin nombre')}")
+                        st.write(f"**Notas:** {pr.get('notes', 'Sin notas')}")
+                        st.write(f"**Creado:** {pr.get('created_at', 'N/A')}")
+                        st.json(pr["project"])
+                        col_a, col_b, col_c = st.columns(3)
+                        with col_a:
+                            if st.button(f"Seleccionar para simular", key=f"select_{pr['id']}"):
+                                st.session_state.selected_project = pr["project"]
+                                st.success("Proyecto seleccionado para simular")
+                        with col_b:
+                            try:
+                                import json as _json
+                                payload = _json.dumps(pr["project"], ensure_ascii=False, indent=2)
+                                filename = f"{pr.get('name', f'project_{pr['id']}')}.json".replace(" ", "_").replace("/", "_")
+                                st.download_button(label="Exportar (JSON)", data=payload, file_name=filename, mime="application/json", key=f"export_{pr['id']}")
+                            except Exception as _e:
+                                st.warning(f"No se pudo preparar export: {_e}")
+                        with col_c:
+                            if st.button(f"Eliminar", key=f"delete_{pr['id']}"):
+                                if st.confirm(f"¿Eliminar proyecto '{pr.get('name', f'ID {pr['id']}')}'?"):
+                                    deleted = crm.global_crm.delete_project(user.username, pr["id"])
+                                    if deleted:
+                                        st.success("Proyecto eliminado")
+                                        st.experimental_rerun()
+                                    else:
+                                        st.error("Error eliminando proyecto")
