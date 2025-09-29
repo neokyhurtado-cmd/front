@@ -166,10 +166,30 @@ class AforosNormalizer:
             return 1.0
 
         # PHF = (flujo máximo por hora) / (flujo máximo por 15 minutos * 4)
-        # TODO: Implementar cálculo real con intervalos de 15 minutos
-        # Placeholder: simplificación
+        # Como no tenemos datos de 15 minutos, usamos una aproximación
+        # basada en la variabilidad de los datos horarios
         max_hourly = vph_by_hour.max()
-        return max_hourly / (max_hourly * 0.85) if max_hourly > 0 else 1.0
+        mean_hourly = vph_by_hour.mean()
+
+        if mean_hourly == 0:
+            return 1.0
+
+        # PHF aproximado basado en la relación pico/promedio
+        # Valores típicos: 0.7-0.95 para condiciones congestionadas
+        # 0.95-1.0 para flujo libre
+        peak_ratio = max_hourly / mean_hourly
+
+        # Normalizar a rango típico de PHF
+        if peak_ratio <= 1.5:
+            phf = 0.95  # Flujo relativamente uniforme
+        elif peak_ratio <= 2.0:
+            phf = 0.85  # Pico moderado
+        elif peak_ratio <= 3.0:
+            phf = 0.75  # Pico pronunciado
+        else:
+            phf = 0.70  # Pico muy pronunciado
+
+        return phf
 
     def _calculate_hmd(self, vph_by_hour: pd.Series) -> str:
         """Calcular Hora del Máximo Diario (HMD)"""
