@@ -74,6 +74,22 @@ def _ensure_db(db_path: Optional[str] = None):
         )
         """
     )
+    # speed_comparisons: id, username FK, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS speed_comparisons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            origin TEXT NOT NULL,
+            destination TEXT NOT NULL,
+            distance_meters INTEGER,
+            duration_seconds INTEGER,
+            duration_traffic_seconds INTEGER,
+            created_at TEXT,
+            FOREIGN KEY(username) REFERENCES users(username)
+        )
+        """
+    )
     # Lightweight migration: ensure columns exist (for older DBs)
     try:
         c.execute("PRAGMA table_info(projects)")
@@ -288,3 +304,49 @@ class CRM:
         if not row:
             return None
         return {"username": row[0], "password_hash": row[1], "plan": row[2]}
+
+    def add_speed_comparison(self, username: str, origin: str, destination: str,
+                           distance_meters: Optional[int] = None,
+                           duration_seconds: Optional[int] = None,
+                           duration_traffic_seconds: Optional[int] = None) -> Optional[int]:
+        """Add a speed comparison result. Returns inserted id or None on failure."""
+        from datetime import datetime, timezone
+
+        if not self.find_user(username):
+            return None
+        created_at = datetime.now(timezone.utc).isoformat()
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO speed_comparisons (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (username, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at),
+        )
+        conn.commit()
+        last_id = c.lastrowid
+        conn.close()
+        return last_id
+
+    def list_speed_comparisons(self, username: str) -> List[dict]:
+        """List speed comparisons for a user."""
+        if not self.find_user(username):
+            return []
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "SELECT id, origin, destination, distance_meters, duration_seconds, duration_traffic_seconds, created_at FROM speed_comparisons WHERE username = ? ORDER BY created_at DESC",
+            (username,),
+        )
+        rows = c.fetchall()
+        conn.close()
+        out: List[dict] = []
+        for r in rows:
+            out.append({
+                "id": r[0],
+                "origin": r[1],
+                "destination": r[2],
+                "distance_meters": r[3],
+                "duration_seconds": r[4],
+                "duration_traffic_seconds": r[5],
+                "created_at": r[6]
+            })
+        return out
