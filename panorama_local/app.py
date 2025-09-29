@@ -222,11 +222,15 @@ elif option == "Simulación y CRM":
                 res = simulation.run_simulation(selected_project, engine=engine)
                 st.success("Simulación completada")
                 st.json(res)
-                # If the project came from an uploaded file, offer to save
+                # If the project came from an uploaded file, offer to save with metadata
                 if uploaded is not None and crm_instance.is_authenticated():
+                    st.write("Guardar proyecto importado en la cuenta")
+                    meta_name = st.text_input("Nombre del proyecto", value="", key="meta_name")
+                    meta_notes = st.text_area("Notas (opcionales)", value="", key="meta_notes")
                     if st.button("Guardar proyecto en mi cuenta", key="save_after_sim"):
                         user = crm_instance.current_user()
-                        proj_id = crm_instance.add_project(user.get('username'), selected_project)
+                        proj_id = crm_instance.add_project_with_meta(user.get('username'), selected_project, name=meta_name or None, notes=meta_notes or None)
+                        st.success(f"Proyecto guardado (id={proj_id})")
                         st.success(f"Proyecto guardado (id={proj_id})")
                 elif uploaded is not None and not crm_instance.is_authenticated():
                     st.info("Inicia sesión para guardar el proyecto en tu cuenta.")
@@ -311,32 +315,34 @@ elif option == "Simulación y CRM":
                 st.write("No hay proyectos guardados.")
             else:
                 for pr in projects:
-                    with st.expander(f"Proyecto: {pr.get('name', f'ID {pr['id']}')}"):
-                        st.write(f"**Nombre:** {pr.get('name', 'Sin nombre')}")
-                        st.write(f"**Notas:** {pr.get('notes', 'Sin notas')}")
-                        st.write(f"**Creado:** {pr.get('created_at', 'N/A')}")
-                        st.json(pr["project"])
-                        col_a, col_b, col_c = st.columns(3)
-                        with col_a:
-                            if st.button(f"Seleccionar para simular", key=f"select_{pr['id']}"):
-                                st.session_state.selected_project = pr["project"]
-                                st.success("Proyecto seleccionado para simular")
-                        with col_b:
-                            try:
-                                import json as _json
-                                payload = _json.dumps(pr["project"], ensure_ascii=False, indent=2)
-                                filename = f"{pr.get('name', f'project_{pr['id']}')}.json".replace(" ", "_").replace("/", "_")
-                                st.download_button(label="Exportar (JSON)", data=payload, file_name=filename, mime="application/json", key=f"export_{pr['id']}")
-                            except Exception as _e:
-                                st.warning(f"No se pudo preparar export: {_e}")
-                        with col_c:
-                            # Delete with confirmation checkbox to avoid accidents
-                            confirm_key = f"confirm_delete_{pr['id']}"
-                            if st.checkbox("Confirmar borrado", key=confirm_key):
-                                if st.button("Eliminar proyecto", key=f"del_btn_{pr['id']}"):
-                                    ok = crm_instance.delete_project(user.get('username'), pr["id"])
-                                    if ok:
-                                        st.success(f"Proyecto {pr['id']} eliminado")
-                                        st.experimental_rerun()
-                                    else:
-                                        st.error("No se pudo eliminar el proyecto")
+                    pid = pr.get('id')
+                    name = pr.get('name') or f"Proyecto {pid}"
+                    notes = pr.get('notes') or ""
+                    created_at = pr.get('created_at')
+                    st.write(f"{name} (id={pid})")
+                    if created_at:
+                        st.caption(f"Creado: {created_at}")
+                    if notes:
+                        st.markdown(f"> {notes}")
+                    st.json(pr.get('project'))
+                    try:
+                        import json as _json
+                        payload = _json.dumps({
+                            "meta": {"id": pid, "name": name, "notes": notes, "created_at": created_at},
+                            "project": pr.get('project'),
+                        }, ensure_ascii=False, indent=2)
+                        safe_name = (name or f"project_{pid}").replace(" ", "_")
+                        filename = f"{safe_name}_{pid}.json"
+                        st.download_button(label="Exportar proyecto (JSON)", data=payload, file_name=filename, mime="application/json")
+                    except Exception as _e:
+                        st.warning(f"No se pudo preparar export: {_e}")
+                    # Delete with confirmation checkbox to avoid accidents
+                    confirm_key = f"confirm_delete_{pid}"
+                    if st.checkbox("Confirmar borrado", key=confirm_key):
+                        if st.button("Eliminar proyecto", key=f"del_btn_{pid}"):
+                            ok = crm_instance.delete_project(user.get('username'), pid)
+                            if ok:
+                                st.success(f"Proyecto {pid} eliminado")
+                                st.experimental_rerun()
+                            else:
+                                st.error("No se pudo eliminar el proyecto")

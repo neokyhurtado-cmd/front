@@ -23,13 +23,15 @@ def test_register_login_and_projects(tmp_path):
 
     # add project and list
     project = {"markers": [{"id": 1}], "plan": "Free"}
-    # add_project returns inserted id (int)
-    res = c.add_project("u1", project, name="Test Project", notes="Some notes")
-    assert isinstance(res, int)
-    assert res > 0
+    pid = c.add_project_with_meta("u1", project, name="Test project", notes="note")
+    assert isinstance(pid, int) and pid > 0
     projects = c.list_projects("u1")
     assert isinstance(projects, list)
     assert len(projects) == 1
+    first = projects[0]
+    assert first.get("id") == pid
+    assert first.get("name") == "Test project"
+    assert first.get("notes") == "note"
 
     # check project metadata keys
     p = projects[0]
@@ -38,12 +40,12 @@ def test_register_login_and_projects(tmp_path):
     assert "name" in p
     assert "notes" in p
     assert "created_at" in p
-    assert p["name"] == "Test Project"
-    assert p["notes"] == "Some notes"
+    assert p["name"] == "Test project"
+    assert p["notes"] == "note"
     assert p["project"] == project
 
     # delete project
-    assert c.delete_project("u1", res) is True
+    assert c.delete_project("u1", pid) is True
     projects = c.list_projects("u1")
     assert len(projects) == 0
 
