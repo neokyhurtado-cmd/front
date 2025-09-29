@@ -49,11 +49,14 @@ python -c "import sys,pytest; sys.path.insert(0, r'C:\path\to\repo'); sys.exit(p
 
 Notes
 - The DB file is `data/panorama_crm.db` under this folder.
-- Use the `Clear DB` button in the Streamlit UI for quick reset while developing.
+- Use the `Clear DB` button in the Streamlit UI for quick reset while developing.Panorama Local
+===============
 
-Additional project information
-------------------------------
+Aplicación Streamlit de ejemplo para construir PMT y ejecutar simulaciones sintéticas.
 
-This repository also contains a Laravel application and frontend code. The original Laravel README content is preserved in README-COMPLETO.md for full framework documentation.
+Instrucciones rápidas:
 
-For the Laravel project and contributing guidelines, see `README-COMPLETO.md`.
+1. Instala dependencias: pip install -r requirements.txt
+2. Ejecuta: streamlit run app.py
+
+El módulo `modules/simulation.py` implementa stubs; `modules/crm.py` es un CRM en memoria.
