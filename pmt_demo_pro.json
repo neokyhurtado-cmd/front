@@ -1,0 +1,56 @@
+{
+  "markers": [
+    {
+      "id": 1,
+      "lat": 4.6097,
+      "lng": -74.0817,
+      "type": "intersection",
+      "name": "Plaza de Bolívar",
+      "traffic_volume": 1200,
+      "capacity": 1800
+    },
+    {
+      "id": 2,
+      "lat": 4.6110,
+      "lng": -74.0820,
+      "type": "intersection",
+      "name": "Calle 11",
+      "traffic_volume": 950,
+      "capacity": 1600
+    },
+    {
+      "id": 3,
+      "lat": 4.6120,
+      "lng": -74.0830,
+      "type": "intersection",
+      "name": "Carrera 7",
+      "traffic_volume": 1800,
+      "capacity": 2200
+    }
+  ],
+  "plan": "Pro",
+  "rotulo": "Demo Pro - Análisis Avanzado",
+  "center": {
+    "lat": 4.6109,
+    "lng": -74.0822
+  },
+  "lote": {
+    "bounds": {
+      "north": 4.6150,
+      "south": 4.6050,
+      "east": -74.0750,
+      "west": -74.0850
+    },
+    "area_km2": 1.25,
+    "population_density": 8500
+  },
+  "analysis": {
+    "total_intersections": 3,
+    "critical_points": 1,
+    "recommendations": [
+      "Implementar semáforos inteligentes en intersección crítica",
+      "Mejorar señalización en Calle 11",
+      "Considerar restricción de carga en horas pico"
+    ]
+  }
+}

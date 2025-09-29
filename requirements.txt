@@ -1,0 +1,10 @@
+streamlit
+pandas
+pydeck
+bcrypt
+reportlab
+pytest
+pytest-cov
+openpyxl
+jinja2
+requests
