@@ -1,4 +1,4 @@
-"""CRM sencillo con persistencia SQLite y hashing de contraseñas.
+"""CRM sencillo con persistencia SQLite y hash            created_at TEXT,      created_at TEXT, contraseñas.
 
 Proporciona una clase CRM que usa una base de datos SQLite local para:
 - registrar usuarios (con contraseñas hasheadas con bcrypt),
@@ -36,17 +36,34 @@ def _ensure_db(db_path: Optional[str] = None):
         )
         """
     )
-    # projects: id, username FK, project_json
+    # projects: id, username FK, project_json, name, notes, created_at
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             project_json TEXT NOT NULL,
+            name TEXT,
+            notes TEXT,
+            created_at TEXT,
             FOREIGN KEY(username) REFERENCES users(username)
         )
         """
     )
+    # Lightweight migration: ensure columns exist (for older DBs)
+    try:
+        c.execute("PRAGMA table_info(projects)")
+        cols = [row[1] for row in c.fetchall()]
+        # add missing columns if needed
+        if 'name' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN name TEXT")
+        if 'notes' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN notes TEXT")
+        if 'created_at' not in cols:
+            c.execute("ALTER TABLE projects ADD COLUMN created_at TEXT")
+    except Exception:
+        # if PRAGMA fails (table might not exist yet) ignore and proceed
+        pass
     conn.commit()
     conn.close()
 
@@ -109,17 +126,29 @@ class CRM:
         conn.close()
         return changed
 
-    def add_project(self, username: str, project: dict) -> bool:
+    def add_project(self, username: str, project: dict, name: Optional[str] = None, notes: Optional[str] = None) -> int:
         import json
 
         if not self.find_user(username):
-            return False
+            return -1
         conn = self._connect()
         c = conn.cursor()
-        c.execute("INSERT INTO projects (username, project_json) VALUES (?, ?)", (username, json.dumps(project)))
+        # legacy simple insert: but we now support metadata
+        created_at = None
+        try:
+            from datetime import datetime
+
+            created_at = datetime.utcnow().isoformat()
+        except Exception:
+            created_at = None
+        c.execute(
+            "INSERT INTO projects (username, project_json, name, notes, created_at) VALUES (?, ?, ?, ?, ?)",
+            (username, json.dumps(project), None, None, created_at),
+        )
         conn.commit()
+        last_id = c.lastrowid
         conn.close()
-        return True
+        return last_id
 
     def list_projects(self, username: str) -> List[dict]:
         import json
@@ -128,10 +157,49 @@ class CRM:
             return []
         conn = self._connect()
         c = conn.cursor()
-        c.execute("SELECT project_json FROM projects WHERE username = ? ORDER BY id", (username,))
+        c.execute(
+            "SELECT id, project_json, name, notes, created_at FROM projects WHERE username = ? ORDER BY id",
+            (username,),
+        )
         rows = c.fetchall()
         conn.close()
-        return [json.loads(r[0]) for r in rows]
+        out: List[dict] = []
+        for r in rows:
+            pid = r[0]
+            pj = json.loads(r[1])
+            name = r[2]
+            notes = r[3]
+            created_at = r[4]
+            out.append({"id": pid, "project": pj, "name": name, "notes": notes, "created_at": created_at})
+        return out
+
+    def delete_project(self, username: str, project_id: int) -> bool:
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute("DELETE FROM projects WHERE id = ? AND username = ?", (project_id, username))
+        conn.commit()
+        changed = c.rowcount > 0
+        conn.close()
+        return changed
+
+    def add_project_with_meta(self, username: str, project: dict, name: Optional[str] = None, notes: Optional[str] = None) -> Optional[int]:
+        """Add a project with metadata. Returns inserted id or None on failure."""
+        import json
+        from datetime import datetime
+
+        if not self.find_user(username):
+            return None
+        created_at = datetime.utcnow().isoformat()
+        conn = self._connect()
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO projects (username, project_json, name, notes, created_at) VALUES (?, ?, ?, ?, ?)",
+            (username, json.dumps(project), name, notes, created_at),
+        )
+        conn.commit()
+        last_id = c.lastrowid
+        conn.close()
+        return last_id
 
     def find_user(self, username: str) -> Optional[Dict[str, Any]]:
         conn = self._connect()
@@ -142,7 +210,3 @@ class CRM:
         if not row:
             return None
         return {"username": row[0], "password_hash": row[1], "plan": row[2]}
-
-
-# Instancia global para acceder desde la app
-global_crm = CRM()

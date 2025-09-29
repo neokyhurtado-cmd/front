@@ -19,4 +19,5 @@ jobs:
           pip install -r panorama_local/requirements.txt
           pip install pytest
       - name: Run tests
-        run: pytest -q
+        run: |
+          python -m pytest tests/ -v
